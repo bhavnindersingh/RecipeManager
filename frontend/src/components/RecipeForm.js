@@ -565,6 +565,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
       profit_margin: profitMargin.toFixed(2),
       markup_factor: markupFactor.toFixed(2)
     }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipe.ingredients, recipe.overhead, recipe.selling_price, recipe.sales]);
 
   const handleNameChange = (e) => {

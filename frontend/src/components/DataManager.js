@@ -4,7 +4,6 @@ import '../styles/DataManager.css';
 import config from '../config';
 
 const DataManager = ({ recipes, onSalesUpdate }) => {
-  const [error, setError] = useState({ message: '', type: '' });
   const [importLogs, setImportLogs] = useState(() => {
     const defaultLogs = {
       sales: {
@@ -33,25 +32,11 @@ const DataManager = ({ recipes, onSalesUpdate }) => {
       return defaultLogs;
     }
   });
-  const [importStats, setImportStats] = useState(null);
 
   // Save logs to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('importLogs', JSON.stringify(importLogs));
   }, [importLogs]);
-
-  const addImportLog = (type, status, details) => {
-    const newLog = {
-      timestamp: new Date().toISOString(),
-      status,
-      details
-    };
-
-    setImportLogs(prev => ({
-      ...prev,
-      [type]: [newLog, ...prev[type]].slice(0, 10) // Keep only last 10 logs
-    }));
-  };
 
   // Format the timestamp for display
   const formatTimestamp = (timestamp) => {
@@ -149,22 +134,6 @@ const DataManager = ({ recipes, onSalesUpdate }) => {
         ...prev,
         sales: logDetails
       }));
-      
-      // Set import stats for UI feedback
-      setImportStats(logDetails.stats);
-
-      // Show success message with details
-      const message = [
-        'Sales data imported successfully:',
-        `${result.summary.updated} recipes updated`,
-        `${result.summary.created} new recipes created`,
-        result.summary.failed > 0 ? `${result.summary.failed} failed` : ''
-      ].filter(Boolean).join(', ');
-
-      setError({ 
-        message, 
-        type: result.summary.failed > 0 ? 'warning' : 'success' 
-      });
 
       // Trigger callback to refresh recipes list
       if (onSalesUpdate) {
@@ -187,11 +156,6 @@ const DataManager = ({ recipes, onSalesUpdate }) => {
           ].slice(0, 10) // Keep last 10 errors
         }
       }));
-
-      setError({ 
-        message: `Failed to import sales data: ${error.message}`, 
-        type: 'error' 
-      });
     }
 
     // Clear file input
@@ -211,10 +175,9 @@ const DataManager = ({ recipes, onSalesUpdate }) => {
       const ws = XLSX.utils.json_to_sheet(template);
       XLSX.utils.book_append_sheet(wb, ws, 'Sales Template');
       XLSX.writeFile(wb, 'sales_template.xlsx');
-      setError({ message: 'Template downloaded successfully', type: 'success' });
+      console.log('Template downloaded successfully');
     } catch (error) {
       console.error('Error downloading template:', error);
-      setError({ message: 'Failed to download template', type: 'error' });
     }
   };
 
