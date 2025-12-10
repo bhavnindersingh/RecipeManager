@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import IngredientsManager from './components/IngredientsManager';
-import RecipeForm from './components/RecipeForm';
-import RecipeManager from './components/RecipeManager';
-import Analytics from './components/Analytics';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
-import DataManager from './components/DataManager';
+import ErrorBoundary from './components/ErrorBoundary';
 import { recipeService, ingredientService } from './services/supabaseService';
 import './styles/App.css';
+
+// Code splitting: Lazy load heavy components
+const IngredientsManager = lazy(() => import('./components/IngredientsManager'));
+const RecipeForm = lazy(() => import('./components/RecipeForm'));
+const RecipeManager = lazy(() => import('./components/RecipeManager'));
+const Analytics = lazy(() => import('./components/Analytics'));
+const DataManager = lazy(() => import('./components/DataManager'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -19,6 +22,20 @@ const ScrollToTop = () => {
 
   return null;
 };
+
+// Loading component for Suspense fallback
+const LoadingFallback = () => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '60vh',
+    fontSize: '1.2rem',
+    color: '#64748b'
+  }}>
+    <div>Loading...</div>
+  </div>
+);
 
 function App() {
   const navigate = useNavigate();
@@ -79,7 +96,6 @@ function App() {
   const fetchRecipes = useCallback(async () => {
     try {
       const data = await recipeService.getAllRecipes();
-      console.log('Fetched recipes:', data);
       setRecipes(data);
     } catch (error) {
       console.error('Error fetching recipes:', error);
@@ -122,7 +138,6 @@ function App() {
 
   const handleDeleteRecipe = async (recipeId) => {
     try {
-      console.log('Deleting recipe with ID:', recipeId);
       await recipeService.deleteRecipe(recipeId);
 
       // Update recipes state immediately after successful deletion
@@ -213,8 +228,9 @@ function App() {
       )}
 
       <main>
-        <Routes>
-          <Route path="/login" element={
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/login" element={
             isAuthenticated ? (
               <Navigate to="/manager" replace />
             ) : (
@@ -313,8 +329,9 @@ function App() {
             } 
           />
 
-          <Route path="*" element={<Navigate to="/manager" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/manager" replace />} />
+          </Routes>
+        </Suspense>
       </main>
       <footer className="app-footer">
         <div className="footer-content">
@@ -328,10 +345,12 @@ function App() {
 // Wrapper component that provides router context
 function AppWrapper() {
   return (
-    <Router>
-      <ScrollToTop />
-      <App />
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <ScrollToTop />
+        <App />
+      </Router>
+    </ErrorBoundary>
   );
 }
 

@@ -30,13 +30,6 @@ export const recipeService = {
   async createRecipe(recipeData) {
     const { ingredients, image, image_preview, delivery_image, delivery_image_preview, id, created_at, updated_at, ...recipeFields } = recipeData;
 
-    // Log what we're sending to Supabase
-    console.log('📤 SENDING TO SUPABASE:', {
-      totalFields: Object.keys(recipeFields).length,
-      fieldNames: Object.keys(recipeFields),
-      data: recipeFields
-    });
-
     // Insert recipe (only DB fields)
     const { data: recipe, error: recipeError } = await supabase
       .from('recipes')
@@ -45,11 +38,7 @@ export const recipeService = {
       .single();
 
     if (recipeError) {
-      console.error('Supabase error creating recipe:', {
-        error: recipeError,
-        fields: Object.keys(recipeFields),
-        data: recipeFields
-      });
+      console.error('Supabase error creating recipe:', recipeError);
       throw recipeError;
     }
 

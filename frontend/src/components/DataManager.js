@@ -175,7 +175,6 @@ const DataManager = ({ recipes, onSalesUpdate }) => {
       const ws = XLSX.utils.json_to_sheet(template);
       XLSX.utils.book_append_sheet(wb, ws, 'Sales Template');
       XLSX.writeFile(wb, 'sales_template.xlsx');
-      console.log('Template downloaded successfully');
     } catch (error) {
       console.error('Error downloading template:', error);
     }

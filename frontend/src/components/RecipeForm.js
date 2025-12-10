@@ -66,7 +66,7 @@ const ImagePreview = ({ url, onRemove, alt, isViewMode }) => {
   const EnlargedView = () => (
     <div className="enlarged-image-overlay" onClick={handleOverlayClick}>
       <div className="enlarged-image-container">
-        <img src={imageUrl} alt={alt} />
+        <img src={imageUrl} alt={alt} loading="eager" />
       </div>
       <button 
         className="close-enlarged-btn" 
@@ -82,20 +82,16 @@ const ImagePreview = ({ url, onRemove, alt, isViewMode }) => {
 
   return (
     <div className="image-preview-container">
-      <img 
-        src={imageUrl} 
-        alt={alt} 
+      <img
+        src={imageUrl}
+        alt={alt}
+        loading="lazy"
         style={{ cursor: 'pointer' }}
         onClick={handleImageClick}
         onError={(e) => {
-          console.error('Image failed to load:', {
-            originalUrl: imageUrl,
-            error: e.error
-          });
           // Only try alternative URL if it's not a blob URL
           if (!url.startsWith('blob:') && imageUrl.includes('conscious-cafe-recipe-2024-uploads')) {
             const assetUrl = `https://storage.googleapis.com/recipe.consciouscafe.in/${url.split('/').pop()}`;
-            console.log('Trying Assets URL:', assetUrl);
             e.target.src = assetUrl;
           } else {
             e.target.src = '/placeholder-recipe.png';
@@ -179,11 +175,9 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
     }
   }, [mode, viewingRecipe]);
 
-  // Log the recipe state in view mode
+  // Recipe state monitoring for view mode
   useEffect(() => {
-    if (mode === 'view') {
-      console.log('Recipe in view mode:', recipe);
-    }
+    // Recipe data is ready in view mode
   }, [recipe, mode]);
 
   const [showImageModal, setShowImageModal] = useState(false);
@@ -283,19 +277,11 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
   const handleImageUpload = async (file, fieldName) => {
     if (!file) {
-      console.log('No file provided for upload');
       return null;
     }
 
-    console.log('Uploading file:', {
-      name: file.name,
-      type: file.type,
-      size: file.size
-    });
-
     try {
       const url = await recipeService.uploadImage(file);
-      console.log('Upload successful:', url);
       return url;
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -1040,7 +1026,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
       {showImageModal && (
         <div className="image-modal" onClick={() => setShowImageModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <img src={recipe.image_preview || recipe.image} alt="Recipe full view" />
+            <img src={recipe.image_preview || recipe.image} alt="Recipe full view" loading="eager" />
             <button className="close-modal" onClick={() => setShowImageModal(false)}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
                 <path d="M18 6L6 18M6 6l12 12"/>
@@ -1053,7 +1039,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         <div className="image-modal" onClick={() => setShowDeliveryImageModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">Delivery Presentation Image</div>
-            <img src={recipe.delivery_image_preview || recipe.delivery_image_url} alt="Delivery full view" />
+            <img src={recipe.delivery_image_preview || recipe.delivery_image_url} alt="Delivery full view" loading="eager" />
             <button className="close-modal" onClick={() => setShowDeliveryImageModal(false)}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
                 <path d="M18 6L6 18M6 6l12 12"/>

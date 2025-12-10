@@ -68,20 +68,16 @@ const prepareChartData = (sortedData) => {
 };
 
 const Analytics = ({ recipes }) => {
-  console.log('Analytics component - Received recipes:', recipes);
-
   const [hoveredRecipe, setHoveredRecipe] = useState(null);
 
   const validRecipes = useMemo(() => {
-    const filtered = recipes.filter(recipe => 
-      recipe && 
-      recipe.selling_price !== undefined && 
-      recipe.selling_price !== null && 
-      recipe.selling_price !== '' && 
+    return recipes.filter(recipe =>
+      recipe &&
+      recipe.selling_price !== undefined &&
+      recipe.selling_price !== null &&
+      recipe.selling_price !== '' &&
       Number(recipe.selling_price) > 0
     );
-    console.log('Analytics component - Valid recipes:', filtered);
-    return filtered;
   }, [recipes]);
 
   const sortedData = useMemo(() => sortData(validRecipes), [validRecipes]);

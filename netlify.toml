@@ -11,6 +11,7 @@
 [build.environment]
   NODE_VERSION = "20"
   GENERATE_SOURCEMAP = "false"
+  SECRETS_SCAN_OMIT_KEYS = "REACT_APP_SUPABASE_URL,REACT_APP_SUPABASE_ANON_KEY"
 
 # Headers for security
 [[headers]]
