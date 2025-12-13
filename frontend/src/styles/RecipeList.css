@@ -7,48 +7,68 @@
 
 .recipe-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
+  background: var(--surface-glass);
+  /* Changed from 0.1 opacity to shared glass var */
+  backdrop-filter: var(--blur-strong);
+  -webkit-backdrop-filter: var(--blur-strong);
+  border-radius: 20px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   min-height: 120px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  background: var(--surface-glass-strong);
 }
 
 /* Status Indicator - Mid Right */
 .status-indicator {
   position: absolute;
-  top: 50%;
+  top: 1rem;
   right: 1rem;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 24px;
-  background: #22c55e;
+  transform: none;
+  /* Reset center align */
+  width: 28px;
+  height: 28px;
+  background: var(--success);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-header {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
 }
 
 .recipe-title {
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   margin: 0 0 0.5rem 0;
   color: var(--text-primary);
+  font-weight: 700;
 }
 
 .recipe-category {
   font-size: 0.9rem;
-  color: var(--text-secondary);
-  text-align: center;
-  margin-bottom: 1rem;
+  color: var(--primary);
+  background: rgba(148, 76, 104, 0.1);
+  /* Rose tint */
+  padding: 6px 16px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 600;
+  margin-bottom: 0;
 }
 
 /* Multiplier Display - Center */
@@ -58,27 +78,28 @@
   top: 50%;
   transform: translate(-50%, -50%);
   font-size: 2.5rem;
-  font-weight: bold;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  font-weight: 800;
+  padding: 1rem;
+  border-radius: 12px;
   text-align: center;
   z-index: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .multiplier.good {
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  background: rgba(5, 150, 105, 0.1);
 }
 
 .multiplier.bad {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  background: rgba(229, 62, 62, 0.1);
 }
 
 .expanded-metrics {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-light);
 }
 
 .metrics-grid {
@@ -88,76 +109,79 @@
 }
 
 .metric {
-  background: rgba(255, 255, 255, 0.05);
+  background: white;
+  /* Solid white for contrast against glass */
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
   text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .metric-label {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 .metric-value {
   font-size: 1.25rem;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .recipe-actions {
   display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  margin-top: auto;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 1.5rem;
   padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
 }
 
-.show-more-btn,
-.edit-btn,
-.delete-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
+/* Buttons Updated */
 .recipe-actions button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border: none;
-  border-radius: 8px;
-  font-weight: 500;
+  border-radius: 10px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .recipe-actions button.edit {
-  background: rgba(52, 152, 219, 0.1);
-  color: #3498db;
+  background: white;
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
 }
 
 .recipe-actions button.delete {
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
+  background: white;
+  color: var(--error);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
 }
 
 .recipe-actions button.expand {
-  background: rgba(46, 204, 113, 0.1);
-  color: #2ecc71;
+  background: var(--secondary);
+  color: white;
+  box-shadow: 0 4px 10px rgba(184, 98, 125, 0.3);
 }
 
 .recipe-actions button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .recipe-actions button.expanded {
-  background: rgba(52, 73, 94, 0.1);
-  color: #34495e;
+  background: var(--primary);
+  color: white;
 }
 
 .recipe-category {
@@ -189,11 +213,11 @@
 
 .ingredient-name {
   font-weight: 500;
-  color: #34495e;
+  color: var(--text-primary);
 }
 
 .ingredient-amount {
-  color: #7f8c8d;
+  color: var(--text-light);
   font-size: 0.9rem;
 }
 
@@ -244,7 +268,7 @@
 }
 
 .show-more-btn {
-  background: linear-gradient(135deg, #6B7280, #4B5563);
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -256,10 +280,12 @@
 }
 
 .show-more-btn:hover {
-  background: linear-gradient(135deg, #4B5563, #374151);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(148, 76, 104, 0.3);
 }
 
-.edit-btn, .delete-btn {
+.edit-btn,
+.delete-btn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
   padding: 0.5rem;
@@ -268,7 +294,8 @@
   transition: all 0.2s ease;
 }
 
-.edit-btn:hover, .delete-btn:hover {
+.edit-btn:hover,
+.delete-btn:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -353,11 +380,11 @@
 }
 
 .metric-item.highlight {
-  background: rgba(46, 204, 113, 0.1);
+  background: rgba(5, 150, 105, 0.1);
 }
 
 .metric-item.highlight .value {
-  color: #27ae60;
+  color: var(--success);
 }
 
 .recipe-status {
@@ -438,11 +465,11 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .ingredients-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .metrics-row {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -452,43 +479,43 @@
   .financial-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .recipe-metrics {
     grid-template-columns: 1fr;
   }
-  
+
   .metric-item {
     padding: 0.5rem 0.75rem;
   }
-  
+
   .metric-item label {
     font-size: 0.75rem;
   }
-  
+
   .metric-item .value {
     font-size: 0.9rem;
   }
-  
+
   .ingredients-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .ingredient-item {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .ingredient-name {
     grid-column: 1 / -1;
   }
-  
+
   .metrics-row {
     grid-template-columns: 1fr;
   }
-  
+
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .metric-item.highlight {
     grid-column: span 2;
   }
@@ -530,9 +557,9 @@
 
 .category-select {
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--bg-white);
   min-width: 150px;
 }
 
@@ -544,24 +571,25 @@
 .sort-button {
   cursor: pointer;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--bg-white);
   transition: all 0.2s;
 }
 
 .sort-button.active {
-  background-color: #007bff;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
   color: white;
-  border-color: #0056b3;
+  border-color: var(--primary);
 }
 
 .sort-button:hover {
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
 }
 
 .sort-button.active:hover {
-  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(148, 76, 104, 0.3);
 }
 
 .recipes-summary {
@@ -578,29 +606,36 @@
 
 .pagination button {
   padding: 8px 12px;
-  border: 1px solid #ddd;
-  background-color: white;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-white);
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s;
 }
 
 .pagination button.active {
-  background-color: #007bff;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
   color: white;
-  border-color: #0056b3;
+  border-color: var(--primary);
 }
 
 .pagination button:disabled {
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
   cursor: not-allowed;
-  color: #6c757d;
+  color: var(--text-light);
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .recipe-card {
@@ -611,7 +646,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 1.5rem;
-  background: #f8fafc;
+  background: var(--bg-light);
   min-height: 0;
   height: auto;
   padding-bottom: 2rem;
@@ -622,10 +657,10 @@
 }
 
 .recipe-list-container {
-  background: #ffffff;
+  background: var(--bg-white);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   margin-top: 2rem;
 }
 
@@ -669,17 +704,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(to right, #ffffff, #f8fafc);
+  /* background: linear-gradient(to right, #ffffff, #f8fafc); */
   padding: 2rem 2.5rem;
   border-radius: 16px;
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
-  color: #1e293b;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-left: 6px solid #3b82f6;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 2.5rem;
+  color: var(--primary);
+  box-shadow: var(--shadow-md);
+  border-left: 6px solid var(--primary);
+  /* text-transform: uppercase; */
+  letter-spacing: -0.5px;
+  /* margin-bottom: 2.5rem; */
+  margin: 0;
   transition: all 0.3s ease;
 }
 
@@ -736,7 +772,7 @@
 }
 
 .filter-button.active {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
   color: white;
 }
 

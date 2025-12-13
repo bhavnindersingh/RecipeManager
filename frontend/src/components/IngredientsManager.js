@@ -159,14 +159,14 @@ const IngredientsManager = () => {
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        
+
         // Get first worksheet
         const wsname = workbook.SheetNames[0];
         const ws = workbook.Sheets[wsname];
-        
+
         // Convert to JSON
         const jsonData = XLSX.utils.sheet_to_json(ws);
-        
+
         // Transform and validate data
         const newIngredients = jsonData.map(row => {
           const ingredient = {
@@ -189,7 +189,7 @@ const IngredientsManager = () => {
         setIngredients(prev => {
           // Create a map of existing ingredients by name
           const existingMap = new Map(prev.map(ing => [ing.name.toLowerCase(), ing]));
-          
+
           // Filter out duplicates and combine with existing
           const uniqueNew = newIngredients.filter(ing => !existingMap.has(ing.name.toLowerCase()));
           return [...prev, ...uniqueNew];
@@ -269,117 +269,138 @@ const IngredientsManager = () => {
   };
 
   return (
-    <div className="ingredients-manager-container">
+    <div className="ingredients-manager">
       {error.message && (
         <div className={`toast-message ${error.type}`}>
           {error.message}
         </div>
       )}
+
+      {/* Header Section with Title and Stats */}
       <div className="page-title-card">
         <h1 className="page-title">Ingredients Manager</h1>
-        <div className="data-buttons">
-          <input
-            type="file"
-            style={{ display: 'none' }}
-            onChange={importIngredients}
-            accept=".xlsx,.xls"
-          />
-          <button className="icon-btn" onClick={exportIngredients} title="Export to Excel">
-            <img src={process.env.PUBLIC_URL + '/export-icon.svg'} alt="Export" className="btn-icon" />
-          </button>
+        <div className="header-stats">
+          <span className="total-count">{ingredients.length} Total Ingredients</span>
+          <div className="data-buttons">
+            <input
+              type="file"
+              id="import-file"
+              className="file-input-hidden"
+              onChange={importIngredients}
+              accept=".xlsx,.xls"
+            />
+            <button
+              className="btn-import"
+              onClick={() => document.getElementById('import-file').click()}
+              title="Import from Excel"
+            >
+              <span className="btn-icon">📥</span>
+              Import
+            </button>
+            <button
+              className="btn-export"
+              onClick={exportIngredients}
+              title="Export to Excel"
+            >
+              <span className="btn-icon">📤</span>
+              Export
+            </button>
+          </div>
         </div>
       </div>
-      <div className="ingredients-content">
+
+      {/* Add Ingredient Form Section */}
+      <div className="form-section">
+        <h2 className="section-title">Add New Ingredient</h2>
         <form onSubmit={handleAddIngredient}>
-          <div className="add-ingredient-form">
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  className="form-input"
-                  value={newIngredient.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter ingredient name"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Unit</label>
-                <select
-                  name="unit"
-                  className="form-input form-select"
-                  value={newIngredient.unit}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select unit</option>
-                  <option value="kg">Kilogram (kg)</option>
-                  <option value="g">Gram (g)</option>
-                  <option value="l">Liter (l)</option>
-                  <option value="ml">Milliliter (ml)</option>
-                  <option value="pcs">Pieces (pcs)</option>
-                  <option value="dozen">Dozen</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Cost (₹)</label>
-                <input
-                  type="number"
-                  name="cost"
-                  className="form-input"
-                  value={newIngredient.cost}
-                  onChange={handleInputChange}
-                  placeholder="Enter cost per unit"
-                  step="0.01"
-                  min="0"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Category</label>
-                <select
-                  name="category"
-                  className="form-input form-select"
-                  value={newIngredient.category}
-                  onChange={handleInputChange}
-                >
-                  {INGREDIENT_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label className="form-label">Name</label>
+              <input
+                type="text"
+                name="name"
+                className="form-input"
+                value={newIngredient.name}
+                onChange={handleInputChange}
+                placeholder="Enter ingredient name"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Unit</label>
+              <select
+                name="unit"
+                className="form-input form-select"
+                value={newIngredient.unit}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Select unit</option>
+                <option value="kg">Kilogram (kg)</option>
+                <option value="g">Gram (g)</option>
+                <option value="l">Liter (l)</option>
+                <option value="ml">Milliliter (ml)</option>
+                <option value="pcs">Pieces (pcs)</option>
+                <option value="dozen">Dozen</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Cost (₹)</label>
+              <input
+                type="number"
+                name="cost"
+                className="form-input"
+                value={newIngredient.cost}
+                onChange={handleInputChange}
+                placeholder="Enter cost per unit"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Category</label>
+              <select
+                name="category"
+                className="form-input form-select"
+                value={newIngredient.category}
+                onChange={handleInputChange}
+                required
+              >
+                {INGREDIENT_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
             </div>
           </div>
-          <div className="actions-card">
-            <div className="form-buttons">
-              <div className="form-buttons-left">
-                <button type="submit" className="btn-add">
-                  Add Ingredient
-                </button>
-              </div>
-              <div className="form-buttons-right">
-                <div className="search-container">
-                  <input
-                    type="text"
-                    placeholder="Search ingredients..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input"
-                  />
-                  <button
-                    type="button"
-                    className="btn-search"
-                    disabled={!searchTerm}
-                  >
-                    Search
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div className="form-actions">
+            <button type="submit" className="btn-add">
+              Add Ingredient
+            </button>
           </div>
         </form>
+      </div>
 
+      {/* Search and Filter Section */}
+      <div className="search-section">
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search ingredients..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        <div className="ingredient-count">
+          Showing {filteredIngredients.length} of {ingredients.length} ingredients
+        </div>
+      </div>
+
+      {/* Ingredients Table Section */}
+      <div className="table-section">
         <div className="table-container">
-          <table className="modern-table">
+          <table className="ingredients-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -392,9 +413,9 @@ const IngredientsManager = () => {
             <tbody>
               {filteredIngredients.map(ingredient => (
                 <tr key={ingredient.id}>
-                  <td>{ingredient.name}</td>
+                  <td className="ingredient-name">{ingredient.name}</td>
                   <td>{ingredient.unit}</td>
-                  <td>
+                  <td className="ingredient-cost">
                     {editingId === ingredient.id ? (
                       <input
                         type="number"
@@ -427,15 +448,15 @@ const IngredientsManager = () => {
                     <div className="action-buttons">
                       {editingId === ingredient.id ? (
                         <>
-                          <button 
-                            className="save-btn"
+                          <button
+                            className="action-btn save-btn"
                             onClick={() => handleSaveEdit(ingredient)}
                             title="Save"
                           >
                             <span role="img" aria-label="Save">✔️</span>
                           </button>
-                          <button 
-                            className="cancel-btn"
+                          <button
+                            className="action-btn cancel-btn"
                             onClick={handleCancelEdit}
                             title="Cancel"
                           >
@@ -444,15 +465,15 @@ const IngredientsManager = () => {
                         </>
                       ) : (
                         <>
-                          <button 
-                            className="edit-btn"
+                          <button
+                            className="action-btn edit-btn"
                             onClick={() => handleEdit(ingredient)}
                             title="Edit"
                           >
                             <span role="img" aria-label="Edit">✏️</span>
                           </button>
-                          <button 
-                            className="delete-btn"
+                          <button
+                            className="action-btn delete-btn"
                             onClick={() => handleDelete(ingredient.id)}
                             title="Delete"
                           >
@@ -466,7 +487,7 @@ const IngredientsManager = () => {
               ))}
               {filteredIngredients.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="text-center text-secondary">
+                  <td colSpan="5" className="empty-message">
                     {ingredients.length === 0 ? 'No ingredients added yet' : 'No matching ingredients found'}
                   </td>
                 </tr>

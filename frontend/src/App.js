@@ -4,6 +4,7 @@ import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import { recipeService, ingredientService } from './services/supabaseService';
+import './styles/shared.css';  // Import FIRST to load CSS variables
 import './styles/App.css';
 
 // Code splitting: Lazy load heavy components
@@ -191,8 +192,8 @@ function App() {
           <div className="nav-container">
             <div className="nav-left">
               <img
-                src="/conscious-cafe-logo.svg"
-                alt="Conscious Café"
+                src="/android-icon-192x192.png"
+                alt="Kavas Conscious Living"
                 className="header-logo"
                 loading="eager"
               />

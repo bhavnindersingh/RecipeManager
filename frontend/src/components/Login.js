@@ -8,7 +8,7 @@ const Login = ({ onLogin }) => {
   useEffect(() => {
     // Add login-page class when component mounts
     document.body.classList.add('login-page');
-    
+
     // Remove login-page class when component unmounts
     return () => {
       document.body.classList.remove('login-page');
@@ -29,9 +29,9 @@ const Login = ({ onLogin }) => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1 className="login-title">Kavas</h1>
-        <h2 className="login-subtitle">Recipe Management System</h2>
-        
+        <h1 className="login-title">Conscious Cafe</h1>
+        <h2 className="login-subtitle">Cafe Management System</h2>
+
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <input
@@ -46,9 +46,9 @@ const Login = ({ onLogin }) => {
               autoFocus
             />
           </div>
-          
+
           {error && <div className="error-message">{error}</div>}
-          
+
           <button type="submit" className="login-button">
             Login
           </button>

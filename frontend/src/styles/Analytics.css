@@ -8,20 +8,19 @@
 }
 
 .analytics-content {
-  background: white;
+  background: var(--bg-white);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 2rem;
 }
 
 .page-title {
   margin: 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1e293b;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.5px;
 }
 
 .analytics-tabs {
@@ -36,20 +35,20 @@
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
-  background: #fff;
-  color: #495057;
+  background: var(--bg-white);
+  color: var(--text-secondary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .tab-button:hover {
-  background: #e9ecef;
+  background: var(--bg-light);
 }
 
 .tab-button.active {
-  background: #339af0;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
   color: white;
 }
 
@@ -62,10 +61,10 @@
 }
 
 .mf-status-card {
-  background: white;
+  background: var(--bg-white);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .progress-container {
@@ -94,10 +93,10 @@
 }
 
 .category-performance {
-  background: white;
+  background: var(--bg-white);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .performance-cards {
@@ -117,7 +116,7 @@
 
 .category-card h4 {
   margin: 0 0 1rem 0;
-  color: #495057;
+  color: var(--text-secondary);
 }
 
 .mf-value {
@@ -126,9 +125,17 @@
   margin-bottom: 0.5rem;
 }
 
-.mf-value.success { color: #2ecc71; }
-.mf-value.warning { color: #f1c40f; }
-.mf-value.danger { color: #e74c3c; }
+.mf-value.success {
+  color: var(--success);
+}
+
+.mf-value.warning {
+  color: var(--warning);
+}
+
+.mf-value.danger {
+  color: var(--error);
+}
 
 .target-gap {
   font-size: 0.9rem;
@@ -136,11 +143,11 @@
 }
 
 .gap-negative {
-  color: #e74c3c;
+  color: var(--error);
 }
 
 .gap-positive {
-  color: #2ecc71;
+  color: var(--success);
 }
 
 .recipes-below {
@@ -157,19 +164,19 @@
 }
 
 .trend.up {
-  color: #2ecc71;
+  color: var(--success);
 }
 
 .trend.down {
-  color: #e74c3c;
+  color: var(--error);
 }
 
 /* Adjustments Table */
 .adjustments-section {
-  background: white;
+  background: var(--bg-white);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   margin-top: 2rem;
 }
 
@@ -204,9 +211,17 @@
   background-color: #e9ecef;
 }
 
-.adjustments-table td.success { color: #2ecc71; }
-.adjustments-table td.warning { color: #f1c40f; }
-.adjustments-table td.danger { color: #e74c3c; }
+.adjustments-table td.success {
+  color: var(--success);
+}
+
+.adjustments-table td.warning {
+  color: var(--warning);
+}
+
+.adjustments-table td.danger {
+  color: var(--error);
+}
 
 /* Make sort indicators smaller and lighter */
 .sort-icon {
@@ -228,10 +243,10 @@
 }
 
 .cost-drivers {
-  background: white;
+  background: var(--bg-white);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .drivers-list {
@@ -252,7 +267,7 @@
 .rank {
   width: 2rem;
   height: 2rem;
-  background: #339af0;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
   color: white;
   border-radius: 50%;
   display: flex;
@@ -268,7 +283,7 @@
 
 .driver-details h4 {
   margin: 0 0 0.5rem 0;
-  color: #495057;
+  color: var(--text-secondary);
 }
 
 .driver-stats {
@@ -280,10 +295,10 @@
 }
 
 .usage-chart {
-  background: white;
+  background: var(--bg-white);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 /* Responsive Design */
@@ -368,23 +383,25 @@
   font-weight: 600;
 }
 
-.recipe-count, .category-tag, .ingredient-count {
-  background: rgba(52, 152, 219, 0.1);
+.recipe-count,
+.category-tag,
+.ingredient-count {
+  background: rgba(148, 76, 104, 0.1);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.9rem;
-  color: #3498db;
+  color: var(--primary);
   font-weight: 500;
 }
 
 .category-tag {
-  background: rgba(46, 204, 113, 0.1);
-  color: #27ae60;
+  background: rgba(184, 98, 125, 0.1);
+  color: var(--secondary);
 }
 
 .ingredient-count {
-  background: rgba(155, 89, 182, 0.1);
-  color: #8e44ad;
+  background: rgba(148, 76, 104, 0.15);
+  color: var(--primary-dark);
 }
 
 .analytics-content {
@@ -419,17 +436,17 @@
 }
 
 .metric .value.highlight {
-  color: #3498db;
+  color: var(--primary);
 }
 
 .metric .value.revenue {
-  color: #27ae60;
+  color: var(--success);
   font-size: 1.3rem;
   font-weight: 700;
 }
 
 .metric .value.profit {
-  color: #8e44ad;
+  color: var(--primary);
   font-size: 1.3rem;
   font-weight: 700;
 }
@@ -486,11 +503,11 @@
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  background: white;
+  background: var(--bg-white);
   border-radius: 8px;
   padding: 2rem;
   margin-top: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .empty-state p {
@@ -501,10 +518,10 @@
 }
 
 .analytics-content {
-  background: white;
+  background: var(--bg-white);
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .analytics-overview {
@@ -531,10 +548,10 @@
 }
 
 .stat-item {
-  background: white;
+  background: var(--bg-white);
   padding: 1rem;
   border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-label {

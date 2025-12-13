@@ -40,7 +40,7 @@ const emptyRecipe = {
 // Image preview component
 const ImagePreview = ({ url, onRemove, alt, isViewMode }) => {
   const [showEnlarged, setShowEnlarged] = useState(false);
-  
+
   if (!url) return null;
 
   // Handle blob URLs, full URLs, and relative paths correctly
@@ -68,8 +68,8 @@ const ImagePreview = ({ url, onRemove, alt, isViewMode }) => {
       <div className="enlarged-image-container">
         <img src={imageUrl} alt={alt} loading="eager" />
       </div>
-      <button 
-        className="close-enlarged-btn" 
+      <button
+        className="close-enlarged-btn"
         onClick={handleCloseClick}
         aria-label="Close enlarged view"
       >
@@ -99,8 +99,8 @@ const ImagePreview = ({ url, onRemove, alt, isViewMode }) => {
         }}
       />
       <div className="image-actions">
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="image-action-btn fullscreen"
           onClick={handleImageClick}
         >
@@ -109,9 +109,9 @@ const ImagePreview = ({ url, onRemove, alt, isViewMode }) => {
           </svg>
         </button>
         {!isViewMode && (
-          <button 
-            type="button" 
-            className="image-action-btn remove" 
+          <button
+            type="button"
+            className="image-action-btn remove"
             onClick={(e) => {
               e.stopPropagation();
               onRemove();
@@ -222,7 +222,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
   // Track ingredients length changes
   const ingredientsLength = (recipe.ingredients || []).length;
-  
+
   useEffect(() => {
     if (ingredientsLength) {
       setSelectedIngredient({
@@ -292,7 +292,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       // Validate required fields
       if (mode === 'create') {
@@ -303,7 +303,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         // Check for duplicate names only in create mode
         if (recipes) {
           const isDuplicate = recipes.some(
-            existingRecipe => 
+            existingRecipe =>
               existingRecipe.name.toLowerCase().trim() === recipe.name.toLowerCase().trim() &&
               existingRecipe.id !== recipe.id
           );
@@ -313,12 +313,12 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           }
         }
       }
-      
+
       if (!recipe.category?.trim()) {
         setError({ message: 'Category is required', type: 'error' });
         return;
       }
-      
+
       // Ensure ingredients array exists and has items
       const currentIngredients = recipe.ingredients || [];
       if (currentIngredients.length === 0) {
@@ -375,7 +375,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
       // Show success message
       setError({ message: `Recipe ${mode === 'edit' ? 'updated' : 'created'} successfully`, type: 'success' });
-      
+
       // Navigate back to manager after success
       navigate('/manager');
     } catch (err) {
@@ -426,7 +426,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
     if (isViewMode) return;
     const selectedId = e.target.value;
     const selectedIng = ingredients.find(i => i.id === parseInt(selectedId));
-    
+
     setSelectedIngredient({
       id: selectedId,
       name: selectedIng?.name || '',
@@ -464,13 +464,13 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
     // Ensure recipe.ingredients exists
     const currentIngredients = recipe.ingredients || [];
-    
+
     // Check if ingredient already exists
     const existingIngredientIndex = currentIngredients.findIndex(ing => ing.id === parseInt(selectedIngredient.id));
 
     setRecipe(prev => {
       const updatedIngredients = [...(prev.ingredients || [])];
-      
+
       if (existingIngredientIndex !== -1) {
         // Update existing ingredient
         updatedIngredients[existingIngredientIndex] = {
@@ -510,7 +510,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
   useEffect(() => {
     // First, ensure recipe exists and has ingredients array
     if (!recipe || !recipe.ingredients) return;
-    
+
     // Then, ensure all ingredients have proper totalCost
     const updatedIngredients = recipe.ingredients.map(ing => {
       const quantity = parseFloat(ing.quantity) || 0;
@@ -561,7 +561,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
     // Check for duplicate name only in create mode
     if (mode === 'create') {
-      const duplicate = recipes.some(existingRecipe => 
+      const duplicate = recipes.some(existingRecipe =>
         existingRecipe.name.toLowerCase() === newName.toLowerCase()
       );
       setIsDuplicateName(duplicate);
@@ -584,7 +584,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           {mode === 'edit' ? 'Edit Recipe' : mode === 'view' ? 'Show Recipe' : 'Create Recipe'}
         </h1>
       </div>
-      
+
       <form onSubmit={handleSubmitWithLoading} className={`recipe-form ${mode === 'view' ? 'view-mode' : ''}`}>
         {/* Recipe Details Section */}
         <div className="form-section recipe-details-section">
@@ -642,7 +642,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                   />
                   <label htmlFor="recipe-image" className="image-upload-placeholder">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7m4 0v4m0 0l-4-4m4 4l4-4"/>
+                      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7m4 0v4m0 0l-4-4m4 4l4-4" />
                     </svg>
                     <p>Click to upload recipe image</p>
                   </label>
@@ -671,7 +671,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                 disabled={isViewMode}
               />
             </div>
-            
+
             <div className="preparation-item">
               <div className="preparation-item-header">
                 <span role="img" aria-label="cooking">🍳</span>
@@ -721,7 +721,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           <h2>Recipe Ingredients</h2>
           <div className="add-ingredient-form">
             <div className="input-row">
-              <div className="form-group">
+              <div className="form-group" style={{ flex: 2 }}>
                 <label htmlFor="ingredient">Select Ingredient</label>
                 <select
                   id="ingredient"
@@ -739,7 +739,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ flex: 1 }}>
                 <label htmlFor="quantity">Quantity</label>
                 <input
                   type="number"
@@ -752,20 +752,21 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                   disabled={isViewMode}
                 />
               </div>
-            </div>
 
-            <button 
-              type="button" 
-              className="add-ingredient-btn" 
-              onClick={handleAddIngredient}
-              disabled={isViewMode || !selectedIngredient.id || parseFloat(selectedIngredient.quantity) <= 0}
-            >
-              <span>Add Ingredient</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </button>
+              <button
+                type="button"
+                className="add-ingredient-btn"
+                onClick={handleAddIngredient}
+                disabled={isViewMode || !selectedIngredient.id || parseFloat(selectedIngredient.quantity) <= 0}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add
+              </button>
+            </div>
+            {/* Removed separate button, now it's inline */}
           </div>
 
           {error.message && <div className="error-message">{error.message}</div>}
@@ -803,7 +804,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                         disabled={isViewMode}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M6 18L18 6M6 6l12 12"/>
+                          <path d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     </td>
@@ -979,7 +980,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                     />
                     <label htmlFor="delivery-image" className="image-upload-placeholder">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7m4 0v4m0 0l-4-4m4 4l4-4"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7m4 0v4m0 0l-4-4m4 4l4-4" />
                       </svg>
                       <p>Upload delivery presentation image</p>
                       <span className="upload-hint">This image will be shown to customers during delivery</span>
@@ -996,8 +997,8 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         {/* Action Buttons Section */}
         <div className="action-buttons-card">
           {mode === 'view' ? (
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn return-btn"
               onClick={handleCancel}
             >
@@ -1005,15 +1006,15 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
             </button>
           ) : (
             <>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn create-btn"
                 disabled={isSubmitting || (mode === 'create' && isDuplicateName)}
               >
                 <span>+</span> {mode === 'edit' ? 'Update Recipe' : 'Create Recipe'}
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn cancel-btn"
                 onClick={handleCancel}
               >
@@ -1029,7 +1030,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
             <img src={recipe.image_preview || recipe.image} alt="Recipe full view" loading="eager" />
             <button className="close-modal" onClick={() => setShowImageModal(false)}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                <path d="M18 6L6 18M6 6l12 12"/>
+                <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -1042,7 +1043,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
             <img src={recipe.delivery_image_preview || recipe.delivery_image_url} alt="Delivery full view" loading="eager" />
             <button className="close-modal" onClick={() => setShowDeliveryImageModal(false)}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                <path d="M18 6L6 18M6 6l12 12"/>
+                <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
           </div>
