@@ -32,65 +32,86 @@
 }
 
 .nav-container {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   height: 100%;
   max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   width: 100%;
+  gap: 1rem;
 }
 
-/* Logo Area */
-.nav-left {
+/* Burger Menu Button */
+.burger-btn {
   display: flex;
-  align-items: center;
-  gap: 3rem;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1001;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
+.burger-btn:hover {
+  background: rgba(148, 76, 104, 0.1);
+}
+
+.burger-btn span {
+  width: 24px;
+  height: 3px;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.burger-btn.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.burger-btn.open span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.burger-btn.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Centered Logo */
 .header-logo {
   height: 48px;
   width: auto;
   min-width: unset;
   border-radius: 8px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-/* Navigation Links */
-.nav-tabs {
-  display: flex;
-  gap: 1.5rem;
-  height: 100%;
-  align-items: center;
-}
-
-.nav-link {
-  color: var(--text-secondary);
-  text-decoration: none;
-  padding: 0.75rem 1.25rem;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-  font-weight: 600;
-  position: relative;
-}
-
-.nav-link:hover {
-  color: var(--primary);
-  background-color: rgba(255, 255, 255, 0.6);
-}
-
-.nav-link.active {
-  color: white;
-  background: linear-gradient(135deg, var(--secondary), var(--primary));
-  box-shadow: 0 4px 12px rgba(148, 76, 104, 0.3);
+  justify-self: center;
 }
 
 /* Nav Actions (Logout Button) */
 .nav-actions {
   display: flex;
   align-items: center;
+  gap: 1rem;
+  justify-self: end;
+}
+
+.user-info {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0.5rem 0.875rem;
+  background: rgba(148, 76, 104, 0.1);
+  border-radius: 10px;
+  text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .icon-btn {
@@ -130,6 +151,156 @@
   background: var(--error-gradient);
   color: white;
   box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 1101;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
+  border-right: 1px solid rgba(148, 76, 104, 0.2);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 2px solid rgba(148, 76, 104, 0.1);
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+.sidebar-close:hover {
+  background: rgba(148, 76, 104, 0.1);
+  color: var(--primary);
+  transform: rotate(90deg);
+}
+
+.sidebar-content {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  margin: 0.25rem 0;
+}
+
+.sidebar-link:hover {
+  background: rgba(148, 76, 104, 0.08);
+  color: var(--primary);
+  border-left-color: var(--primary);
+}
+
+.sidebar-link.active {
+  background: linear-gradient(90deg, rgba(148, 76, 104, 0.15), transparent);
+  color: var(--primary);
+  border-left-color: var(--primary);
+  font-weight: 700;
+}
+
+.sidebar-icon {
+  font-size: 1.5rem;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-footer {
+  padding: 1.5rem;
+  border-top: 2px solid rgba(148, 76, 104, 0.1);
+  background: rgba(148, 76, 104, 0.05);
+}
+
+.sidebar-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar-user-info strong {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.sidebar-user-info span {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: capitalize;
 }
 
 /* App Footer */
@@ -192,11 +363,6 @@
     padding: 1.5rem;
   }
 
-  .nav-link {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.9rem;
-  }
-
   .header-logo {
     height: 40px;
   }
@@ -214,11 +380,19 @@
 @media (max-width: 768px) {
   .nav-container {
     padding: 0 1rem;
+    grid-template-columns: auto auto auto;
   }
 
-  .nav-tabs {
+  .header-logo {
+    height: 36px;
+  }
+
+  .user-info {
     display: none;
-    /* Mobile menu implementation would be needed here for full correctness, sticking to current behavior */
+  }
+
+  .sidebar {
+    width: 280px;
   }
 
   .page-title-card {
@@ -227,5 +401,25 @@
     text-align: center;
     border-left: none;
     border-top: 6px solid var(--primary);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-container {
+    padding: 0 0.75rem;
+  }
+
+  .sidebar {
+    width: 85vw;
+    max-width: 300px;
+  }
+
+  .burger-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .burger-btn span {
+    width: 20px;
   }
 }

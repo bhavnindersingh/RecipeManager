@@ -1,0 +1,596 @@
+/* ============================================
+   KITCHEN DISPLAY SYSTEM (KDS) STYLES
+   ============================================ */
+
+/* ============================================
+   PAGE LAYOUT
+   ============================================ */
+
+.kds-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #fdf2f8 100%);
+  padding: 1.5rem;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.kds-header {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kds-title {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.kds-stats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.stat-badge {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.stat-badge:hover {
+  transform: translateY(-2px);
+}
+
+.stat-badge.pending {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #991b1b;
+  border: 2px solid #dc2626;
+}
+
+.stat-badge.cooking {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 2px solid #f59e0b;
+}
+
+.stat-badge.ready {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border: 2px solid #10b981;
+}
+
+/* ============================================
+   FILTERS SECTION
+   ============================================ */
+
+.kds-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.kds-filter-btn {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border: 2px solid var(--border-color);
+  background: white;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.kds-filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(148, 76, 104, 0.15);
+}
+
+.kds-filter-btn.active {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(148, 76, 104, 0.3);
+}
+
+/* ============================================
+   LOADING & EMPTY STATES
+   ============================================ */
+
+.kds-loading,
+.kds-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.kds-loading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kds-empty p {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ============================================
+   ORDER GRID
+   ============================================ */
+
+.kds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* ============================================
+   ORDER CARD BASE
+   ============================================ */
+
+.order-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+}
+
+/* ============================================
+   ORDER CARD STATUS VARIANTS
+   ============================================ */
+
+.order-card-pending {
+  border-color: #dc2626;
+  animation: pulse-pending 2s ease-in-out infinite;
+}
+
+.order-card-pending::before {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.order-card-cooking {
+  border-color: #f59e0b;
+}
+
+.order-card-cooking::before {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.order-card-ready {
+  border-color: #10b981;
+}
+
+.order-card-ready::before {
+  background: linear-gradient(135deg, #10b981, #34d399);
+}
+
+@keyframes pulse-pending {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.5);
+    transform: scale(1.02);
+  }
+}
+
+/* ============================================
+   ORDER CARD HEADER
+   ============================================ */
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color-light);
+}
+
+.order-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.order-status-label {
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.order-card-pending .order-status-label {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #991b1b;
+  border: 1px solid #dc2626;
+}
+
+.order-card-cooking .order-status-label {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.order-card-ready .order-status-label {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+/* ============================================
+   ORDER TIMER
+   ============================================ */
+
+.order-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(148, 76, 104, 0.08);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 2px solid rgba(148, 76, 104, 0.15);
+}
+
+.timer-icon {
+  font-size: 1.5rem;
+}
+
+.timer-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* ============================================
+   ORDER METADATA
+   ============================================ */
+
+.order-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: var(--bg-lighter);
+  border-radius: 12px;
+}
+
+.order-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meta-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.meta-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.table-number {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   ORDER NOTES
+   ============================================ */
+
+.order-notes {
+  background: #fff7ed;
+  border-left: 4px solid #f59e0b;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+  color: #92400e;
+}
+
+.order-notes strong {
+  color: #78350f;
+  font-weight: 700;
+}
+
+/* ============================================
+   ORDER ITEMS SECTION
+   ============================================ */
+
+.order-items-section {
+  margin-bottom: 1.5rem;
+}
+
+.items-header {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color-light);
+}
+
+.order-items-list-kds {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.order-item-kds {
+  background: var(--bg-light);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 2px solid var(--border-color-light);
+  transition: all 0.2s ease;
+}
+
+.order-item-kds:hover {
+  border-color: var(--primary);
+  transform: translateX(4px);
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.item-qty-badge {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  padding: 0.5rem 0.875rem;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 1.125rem;
+  min-width: 60px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(148, 76, 104, 0.3);
+}
+
+.item-name-kds {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.item-notes-kds {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  background: #fffbeb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #78350f;
+  font-style: italic;
+  margin-left: 76px;
+  border-left: 3px solid #fbbf24;
+}
+
+.notes-icon {
+  font-size: 1rem;
+}
+
+/* ============================================
+   ORDER ACTIONS
+   ============================================ */
+
+.order-card-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--border-color-light);
+}
+
+.btn-action {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-start-cooking {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: white;
+}
+
+.btn-start-cooking:hover {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+}
+
+.btn-mark-ready {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: white;
+}
+
+.btn-mark-ready:hover {
+  background: linear-gradient(135deg, #059669, #10b981);
+}
+
+.ready-message {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #065f46;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1400px) {
+  .kds-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .kds-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+
+  .kds-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .kds-stats {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .stat-badge {
+    font-size: 1rem;
+    padding: 0.625rem 1.25rem;
+  }
+
+  .kds-title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .kds-page {
+    padding: 1rem;
+  }
+
+  .kds-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kds-filters {
+    flex-direction: column;
+  }
+
+  .kds-filter-btn {
+    width: 100%;
+  }
+
+  .kds-header {
+    padding: 1rem;
+  }
+
+  .order-number {
+    font-size: 1.5rem;
+  }
+
+  .order-card {
+    padding: 1rem;
+  }
+
+  .item-notes-kds {
+    margin-left: 0;
+  }
+
+  .order-card-actions {
+    flex-direction: column;
+  }
+
+  .btn-action {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .kds-title {
+    font-size: 1.5rem;
+  }
+
+  .stat-badge {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .order-card-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

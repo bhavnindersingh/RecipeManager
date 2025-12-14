@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import Login from './components/Login';
-import ProtectedRoute from './components/ProtectedRoute';
+import PinLogin from './components/PinLogin';
+import RoleBasedRoute from './components/RoleBasedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import { recipeService, ingredientService } from './services/supabaseService';
+import { authService } from './services/authService';
 import './styles/shared.css';  // Import FIRST to load CSS variables
 import './styles/App.css';
 
@@ -13,6 +14,8 @@ const RecipeForm = lazy(() => import('./components/RecipeForm'));
 const RecipeManager = lazy(() => import('./components/RecipeManager'));
 const Analytics = lazy(() => import('./components/Analytics'));
 const DataManager = lazy(() => import('./components/DataManager'));
+const POSPage = lazy(() => import('./components/POS/POSPage'));
+const KDSPage = lazy(() => import('./components/KDS/KDSPage'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -49,9 +52,10 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
   const [viewingRecipe, setViewingRecipe] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('isAuthenticated') === 'true';
+  const [currentUser, setCurrentUser] = useState(() => {
+    return authService.getCurrentUser();
   });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Save editingRecipe to sessionStorage whenever it changes
   useEffect(() => {
@@ -62,27 +66,13 @@ function App() {
     }
   }, [editingRecipe]);
 
-  // Handle login
-  const handleLogin = useCallback(() => {
-    setIsAuthenticated(true);
-    sessionStorage.setItem('isAuthenticated', 'true');
-    navigate('/manager');
-  }, [navigate]);
-
   // Handle logout
   const handleLogout = useCallback(() => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('isAuthenticated');
+    authService.logout();
+    setCurrentUser(null);
     sessionStorage.removeItem('editingRecipe');
-    navigate('/login');
+    navigate('/pin-login');
   }, [navigate]);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated && location.pathname !== '/login') {
-      navigate('/login');
-    }
-  }, [isAuthenticated, location.pathname, navigate]);
 
   // Fetch data when authenticated
   const fetchIngredients = useCallback(async () => {
@@ -104,11 +94,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (currentUser) {
       fetchIngredients();
       fetchRecipes();
     }
-  }, [isAuthenticated, fetchIngredients, fetchRecipes]);
+  }, [currentUser, fetchIngredients, fetchRecipes]);
 
 
   const handleRecipeSubmit = async (recipeData, recipeId = null) => {
@@ -184,78 +174,165 @@ function App() {
     };
   }, []);
 
+  // Close menu when route changes
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  // Close menu on ESC key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
   return (
     <div className="app">
       <ScrollToTop />
-      {isAuthenticated && (
-        <header className="app-header">
-          <div className="nav-container">
-            <div className="nav-left">
+      {currentUser && (
+        <>
+          <header className="app-header">
+            <div className="nav-container">
+              {/* Burger Menu Button */}
+              <button
+                className={`burger-btn ${menuOpen ? 'open' : ''}`}
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label="Toggle menu"
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
+
+              {/* Centered Logo */}
               <img
                 src="/android-icon-192x192.png"
                 alt="Kavas Conscious Living"
                 className="header-logo"
                 loading="eager"
               />
-              <nav className="nav-tabs">
-                <NavLink to="/manager" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  Recipes
-                </NavLink>
-                <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  Ingredients
-                </NavLink>
-                <NavLink to="/create" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  Create Recipe
-                </NavLink>
-                <NavLink to="/analytics" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  Analytics
-                </NavLink>
-                <NavLink to="/data" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  Sales Data
-                </NavLink>
+
+              {/* Right Actions */}
+              <div className="nav-actions">
+                <span className="user-info">
+                  {currentUser.name}
+                </span>
+                <button className="icon-btn" onClick={handleLogout} title="Logout">
+                  <img
+                    src="/logout-icon.svg"
+                    alt="Logout"
+                    className="btn-icon"
+                  />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* Sidebar Navigation */}
+          {menuOpen && (
+            <>
+              <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} />
+              <nav className="sidebar">
+                <div className="sidebar-header">
+                  <h2>Menu</h2>
+                  <button
+                    className="sidebar-close"
+                    onClick={() => setMenuOpen(false)}
+                    aria-label="Close menu"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="sidebar-content">
+                  {currentUser.role === 'admin' && (
+                    <>
+                      <NavLink to="/manager" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">🍽️</span>
+                        Recipes
+                      </NavLink>
+                      <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">🥕</span>
+                        Ingredients
+                      </NavLink>
+                      <NavLink to="/create" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">➕</span>
+                        Create Recipe
+                      </NavLink>
+                      <NavLink to="/analytics" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">📊</span>
+                        Analytics
+                      </NavLink>
+                      <NavLink to="/data" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">💰</span>
+                        Sales Data
+                      </NavLink>
+                    </>
+                  )}
+                  {(currentUser.role === 'admin' || currentUser.role === 'server') && (
+                    <NavLink to="/pos" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                      <span className="sidebar-icon">🛒</span>
+                      POS
+                    </NavLink>
+                  )}
+                  {(currentUser.role === 'admin' || currentUser.role === 'kitchen') && (
+                    <NavLink to="/kds" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                      <span className="sidebar-icon">👨‍🍳</span>
+                      Kitchen
+                    </NavLink>
+                  )}
+                  {currentUser.role === 'store_manager' && (
+                    <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                      <span className="sidebar-icon">🥕</span>
+                      Ingredients
+                    </NavLink>
+                  )}
+                </div>
+
+                <div className="sidebar-footer">
+                  <div className="sidebar-user-info">
+                    <strong>{currentUser.name}</strong>
+                    <span>{currentUser.role.replace('_', ' ')}</span>
+                  </div>
+                </div>
               </nav>
-            </div>
-            <div className="nav-actions">
-              <button className="icon-btn" onClick={handleLogout} title="Logout">
-                <img
-                  src="/logout-icon.svg"
-                  alt="Logout"
-                  className="btn-icon"
-                />
-              </button>
-            </div>
-          </div>
-        </header>
+            </>
+          )}
+        </>
       )}
 
       <main>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
-            <Route path="/login" element={
-            isAuthenticated ? (
-              <Navigate to="/manager" replace />
+            <Route path="/pin-login" element={<PinLogin />} />
+
+          <Route path="/" element={
+            currentUser ? (
+              currentUser.role === 'admin' ? <Navigate to="/manager" replace /> :
+              currentUser.role === 'server' ? <Navigate to="/pos" replace /> :
+              currentUser.role === 'kitchen' ? <Navigate to="/kds" replace /> :
+              currentUser.role === 'store_manager' ? <Navigate to="/ingredients" replace /> :
+              <Navigate to="/pin-login" replace />
             ) : (
-              <Login onLogin={handleLogin} />
+              <Navigate to="/pin-login" replace />
             )
           } />
           
-          <Route path="/" element={
-            isAuthenticated ? <Navigate to="/manager" replace /> : <Navigate to="/login" replace />
-          } />
-          
           <Route path="/manager" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <RecipeManager 
-                recipes={recipes} 
+            <RoleBasedRoute allowedRoles={['admin']}>
+              <RecipeManager
+                recipes={recipes}
                 onEditRecipe={handleEditRecipe}
                 onDeleteRecipe={handleDeleteRecipe}
                 onViewRecipe={handleViewRecipe}
               />
-            </ProtectedRoute>
+            </RoleBasedRoute>
           } />
 
           <Route path="/manager/recipe-editor" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <RoleBasedRoute allowedRoles={['admin']}>
               <RecipeForm
                 ingredients={ingredients}
                 onSubmit={handleRecipeSubmit}
@@ -267,34 +344,34 @@ function App() {
                 mode={editingRecipe ? 'edit' : 'create'}
                 recipes={recipes}
               />
-            </ProtectedRoute>
+            </RoleBasedRoute>
           } />
 
           <Route path="/manager/show-recipe" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <RecipeForm 
+            <RoleBasedRoute allowedRoles={['admin']}>
+              <RecipeForm
                 ingredients={ingredients}
                 viewingRecipe={viewingRecipe}
                 mode="view"
                 recipes={recipes}
               />
-            </ProtectedRoute>
+            </RoleBasedRoute>
           } />
 
-          <Route 
-            path="/ingredients" 
+          <Route
+            path="/ingredients"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <RoleBasedRoute allowedRoles={['admin', 'store_manager']}>
                 <IngredientsManager />
-              </ProtectedRoute>
-            } 
+              </RoleBasedRoute>
+            }
           />
 
-          <Route 
-            path="/create" 
+          <Route
+            path="/create"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <RecipeForm 
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <RecipeForm
                   ingredients={ingredients}
                   mode="create"
                   onSubmit={handleRecipeSubmit}
@@ -304,30 +381,50 @@ function App() {
                   }}
                   recipes={recipes}
                 />
-              </ProtectedRoute>
-            } 
+              </RoleBasedRoute>
+            }
           />
 
-          <Route 
-            path="/analytics" 
+          <Route
+            path="/analytics"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <RoleBasedRoute allowedRoles={['admin']}>
                 <Analytics recipes={recipes} />
-              </ProtectedRoute>
-            } 
+              </RoleBasedRoute>
+            }
           />
 
-          <Route 
-            path="/data" 
+          <Route
+            path="/data"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <DataManager 
-                  recipes={recipes} 
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <DataManager
+                  recipes={recipes}
                   ingredients={ingredients}
                   onSalesUpdate={handleSalesUpdate}
                 />
-              </ProtectedRoute>
-            } 
+              </RoleBasedRoute>
+            }
+          />
+
+          {/* POS Route - Server and Admin */}
+          <Route
+            path="/pos"
+            element={
+              <RoleBasedRoute allowedRoles={['admin', 'server']}>
+                <POSPage recipes={recipes} />
+              </RoleBasedRoute>
+            }
+          />
+
+          {/* KDS Route - Kitchen and Admin */}
+          <Route
+            path="/kds"
+            element={
+              <RoleBasedRoute allowedRoles={['admin', 'kitchen']}>
+                <KDSPage />
+              </RoleBasedRoute>
+            }
           />
 
             <Route path="*" element={<Navigate to="/manager" replace />} />

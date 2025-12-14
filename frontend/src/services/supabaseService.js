@@ -28,7 +28,7 @@ export const recipeService = {
 
   // Create a new recipe
   async createRecipe(recipeData) {
-    const { ingredients, image, image_preview, delivery_image, delivery_image_preview, id, created_at, updated_at, ...recipeFields } = recipeData;
+    const { ingredients, recipe_ingredients, image, image_preview, delivery_image, delivery_image_preview, id, created_at, updated_at, ...recipeFields } = recipeData;
 
     // Insert recipe (only DB fields)
     const { data: recipe, error: recipeError } = await supabase
@@ -87,7 +87,7 @@ export const recipeService = {
 
   // Update recipe
   async updateRecipe(id, recipeData) {
-    const { ingredients, image, image_preview, delivery_image, delivery_image_preview, id: recipeId, created_at, updated_at, ...recipeFields } = recipeData;
+    const { ingredients, recipe_ingredients, image, image_preview, delivery_image, delivery_image_preview, id: recipeId, created_at, updated_at, ...recipeFields } = recipeData;
 
     // Update recipe (only DB fields)
     const { error: updateError } = await supabase
