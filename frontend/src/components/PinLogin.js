@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import '../styles/PinLogin.css';
@@ -10,15 +10,7 @@ const PinLogin = () => {
   const navigate = useNavigate();
   const MAX_PIN_LENGTH = 4;
 
-  useEffect(() => {
-    // Check if already authenticated
-    if (authService.isAuthenticated()) {
-      const user = authService.getCurrentUser();
-      redirectByRole(user.role);
-    }
-  }, []);
-
-  const redirectByRole = (role) => {
+  const redirectByRole = useCallback((role) => {
     switch (role) {
       case 'admin':
         navigate('/manager');
@@ -35,7 +27,15 @@ const PinLogin = () => {
       default:
         navigate('/manager');
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    // Check if already authenticated
+    if (authService.isAuthenticated()) {
+      const user = authService.getCurrentUser();
+      redirectByRole(user.role);
+    }
+  }, [redirectByRole]);
 
   const handleNumberClick = (number) => {
     if (pin.length < MAX_PIN_LENGTH) {
@@ -78,7 +78,7 @@ const PinLogin = () => {
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = useCallback((e) => {
     if (e.key >= '0' && e.key <= '9') {
       handleNumberClick(e.key);
     } else if (e.key === 'Enter') {
@@ -86,12 +86,12 @@ const PinLogin = () => {
     } else if (e.key === 'Backspace' || e.key === 'Delete') {
       handleClear();
     }
-  };
+  }, [pin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [pin]);
+  }, [handleKeyPress]);
 
   return (
     <div className="pin-login-container">

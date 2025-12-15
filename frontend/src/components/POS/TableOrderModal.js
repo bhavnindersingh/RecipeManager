@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { orderService } from '../../services/orderService';
 import RecipeGrid from './RecipeGrid';
 import CartPanel from './CartPanel';

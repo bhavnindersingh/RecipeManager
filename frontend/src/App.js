@@ -157,17 +157,6 @@ function App() {
     navigate('/manager/show-recipe');
   };
 
-  const handleSalesUpdate = async () => {
-    try {
-      // Only refresh the recipes list
-      await fetchRecipes();
-      return true;
-    } catch (error) {
-      console.error('Error refreshing recipes:', error);
-      return false;
-    }
-  };
-
   // Clear viewing recipe when navigating away
   useEffect(() => {
     return () => {

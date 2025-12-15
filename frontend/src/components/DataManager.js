@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { orderService } from '../services/orderService';
 import '../styles/DataManager.css';
@@ -30,43 +30,7 @@ const DataManager = () => {
     search: ''
   });
 
-  // Load orders on mount and when filters/page change
-  useEffect(() => {
-    loadOrders();
-  }, [currentPage, filters]);
-
-  // Calculate stats whenever orders change
-  useEffect(() => {
-    calculateStats();
-  }, [orders]);
-
-  const loadOrders = async () => {
-    setLoading(true);
-    try {
-      const { dateFrom, dateTo } = getDateRange();
-
-      const result = await orderService.getOrdersPaginated({
-        page: currentPage,
-        limit: itemsPerPage,
-        orderType: filters.orderType,
-        paymentStatus: filters.paymentStatus,
-        paymentMethod: filters.paymentMethod,
-        dateFrom,
-        dateTo,
-        search: filters.search
-      });
-
-      setOrders(result.orders);
-      setTotalPages(result.totalPages);
-      setTotalCount(result.total);
-    } catch (error) {
-      console.error('Error loading orders:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDateRange = () => {
+  const getDateRange = useCallback(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -105,9 +69,35 @@ const DataManager = () => {
       default:
         return {};
     }
-  };
+  }, [filters.dateRange, filters.dateFrom, filters.dateTo]);
 
-  const calculateStats = () => {
+  const loadOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { dateFrom, dateTo } = getDateRange();
+
+      const result = await orderService.getOrdersPaginated({
+        page: currentPage,
+        limit: itemsPerPage,
+        orderType: filters.orderType,
+        paymentStatus: filters.paymentStatus,
+        paymentMethod: filters.paymentMethod,
+        dateFrom,
+        dateTo,
+        search: filters.search
+      });
+
+      setOrders(result.orders);
+      setTotalPages(result.totalPages);
+      setTotalCount(result.total);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, filters, getDateRange]);
+
+  const calculateStats = useCallback(() => {
     const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
     const avgOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
 
@@ -124,7 +114,17 @@ const DataManager = () => {
       avgOrderValue,
       ordersToday
     });
-  };
+  }, [orders, totalCount]);
+
+  // Load orders on mount and when filters/page change
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  // Calculate stats whenever orders change
+  useEffect(() => {
+    calculateStats();
+  }, [calculateStats]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));

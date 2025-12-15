@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { authService } from '../../services/authService';
 import { recipeService } from '../../services/supabaseService';
 import OrderTypeSelector from './OrderTypeSelector';
 import TableLayout from './TableLayout';
@@ -16,7 +15,6 @@ const POSPage = ({ recipes: initialRecipes }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showTableOrderModal, setShowTableOrderModal] = useState(false);
   const [showBillModal, setShowBillModal] = useState(false);
-  const currentUser = authService.getCurrentUser();
 
   // Fetch recipes if not provided
   useEffect(() => {

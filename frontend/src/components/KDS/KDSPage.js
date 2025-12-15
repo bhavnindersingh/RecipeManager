@@ -7,7 +7,6 @@ const KDSPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [realtimeChannel, setRealtimeChannel] = useState(null);
 
   // Fetch kitchen orders
   const fetchKitchenOrders = useCallback(async () => {
@@ -47,8 +46,6 @@ const KDSPage = () => {
       // Refresh orders list
       fetchKitchenOrders();
     });
-
-    setRealtimeChannel(channel);
 
     // Cleanup on unmount
     return () => {
