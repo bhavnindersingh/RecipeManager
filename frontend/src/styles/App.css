@@ -279,6 +279,26 @@
   justify-content: center;
 }
 
+/* Sidebar Group */
+.sidebar-group {
+  margin: 0.5rem 0;
+}
+
+.sidebar-group-title {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--primary);
+  background: rgba(148, 76, 104, 0.05);
+  border-left: 4px solid var(--primary);
+}
+
+.sidebar-group .sidebar-link {
+  padding-left: 2rem;
+}
+
 .sidebar-footer {
   padding: 1.5rem;
   border-top: 2px solid rgba(148, 76, 104, 0.1);

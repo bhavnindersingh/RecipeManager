@@ -15,15 +15,21 @@ RecipeManager/
 │   ├── 📂 src/                      # React source code
 │   │   ├── 📂 components/          # React components
 │   │   │   ├── Analytics.js        # Analytics dashboard
+│   │   │   ├── Dashboard.js        # Main dashboard
 │   │   │   ├── DataManager.js      # Import/export functionality
+│   │   │   ├── ErrorBoundary.js    # Error handling
 │   │   │   ├── IngredientForm.js   # Add/edit ingredients
 │   │   │   ├── IngredientsManager.js # Manage ingredients
-│   │   │   ├── Login.js            # Login component
+│   │   │   ├── PinLogin.js         # PIN authentication
 │   │   │   ├── ProfitabilityAnalysis.js # Profit analytics
 │   │   │   ├── ProtectedRoute.js   # Route protection
 │   │   │   ├── RecipeForm.js       # Add/edit recipes
 │   │   │   ├── RecipeList.js       # Display recipes
-│   │   │   └── RecipeManager.js    # Main recipe management
+│   │   │   ├── RecipeManager.js    # Main recipe management
+│   │   │   ├── RoleBasedRoute.js   # Role-based routing
+│   │   │   ├── 📂 KDS/            # Kitchen Display System
+│   │   │   ├── 📂 POS/            # Point of Sale
+│   │   │   └── 📂 Stock/          # Stock Management
 │   │   │
 │   │   ├── 📂 services/            # Backend service layer
 │   │   │   └── supabaseService.js  # All Supabase operations
@@ -38,10 +44,18 @@ RecipeManager/
 │   │   ├── 📂 styles/              # CSS files
 │   │   │   ├── Analytics.css
 │   │   │   ├── App.css
+│   │   │   ├── Dashboard.css
 │   │   │   ├── DataManager.css
 │   │   │   ├── IngredientsManager.css
-│   │   │   ├── Login.css
-│   │   │   └── NewRecipeForm.css
+│   │   │   ├── KDS.css
+│   │   │   ├── NewRecipeForm.css
+│   │   │   ├── PinLogin.css
+│   │   │   ├── POS.css
+│   │   │   ├── RecipeForm.css
+│   │   │   ├── RecipeList.css
+│   │   │   ├── RecipeManager.css
+│   │   │   ├── shared.css
+│   │   │   └── Stock*.css          # Stock-related styles
 │   │   │
 │   │   ├── App.js                  # Main App component
 │   │   ├── App.css                 # Main App styles
@@ -71,10 +85,7 @@ RecipeManager/
 │
 ├── 📖 README.md                     # Main project documentation
 ├── 📖 DEPLOYMENT.md                 # Deployment guide (Netlify + Supabase)
-├── 📖 MIGRATION_GUIDE.md            # Migration from old setup
-├── 📖 CLEANUP_INSTRUCTIONS.md       # How to remove old files
 ├── 📖 QUICKSTART.md                 # 5-minute quick start
-├── 📖 RESTRUCTURE_SUMMARY.md        # Summary of changes
 └── 📖 PROJECT_STRUCTURE.md          # This file
 ```
 
@@ -140,9 +151,6 @@ RecipeManager/
 | `README.md` | Project overview, features, tech stack |
 | `DEPLOYMENT.md` | Complete deployment guide (step-by-step) |
 | `QUICKSTART.md` | Get running in 5 minutes |
-| `MIGRATION_GUIDE.md` | Migrate from old setup |
-| `CLEANUP_INSTRUCTIONS.md` | Safely remove old files |
-| `RESTRUCTURE_SUMMARY.md` | Summary of all changes |
 | `PROJECT_STRUCTURE.md` | This file - project structure |
 
 ## 🔄 Data Flow

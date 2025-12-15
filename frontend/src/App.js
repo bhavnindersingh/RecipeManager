@@ -11,6 +11,7 @@ import './styles/App.css';
 // Code splitting: Lazy load heavy components
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const IngredientsManager = lazy(() => import('./components/IngredientsManager'));
+const StockRegister = lazy(() => import('./components/Stock/StockRegister'));
 const RecipeForm = lazy(() => import('./components/RecipeForm'));
 const RecipeManager = lazy(() => import('./components/RecipeManager'));
 const Analytics = lazy(() => import('./components/Analytics'));
@@ -247,10 +248,19 @@ function App() {
                         <span className="sidebar-icon">💰</span>
                         Sales Data
                       </NavLink>
-                      <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                        <span className="sidebar-icon">🥕</span>
-                        Ingredients
-                      </NavLink>
+
+                      <div className="sidebar-group">
+                        <div className="sidebar-group-title">Store</div>
+                        <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">🥕</span>
+                          Ingredients
+                        </NavLink>
+                        <NavLink to="/stock" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">📦</span>
+                          Stock Register
+                        </NavLink>
+                      </div>
+
                       <NavLink to="/manager" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                         <span className="sidebar-icon">🍽️</span>
                         Recipes
@@ -278,10 +288,17 @@ function App() {
                     </NavLink>
                   )}
                   {currentUser.role === 'store_manager' && (
-                    <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                      <span className="sidebar-icon">🥕</span>
-                      Ingredients
-                    </NavLink>
+                    <div className="sidebar-group">
+                      <div className="sidebar-group-title">Store</div>
+                      <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">🥕</span>
+                        Ingredients
+                      </NavLink>
+                      <NavLink to="/stock" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">📦</span>
+                        Stock Register
+                      </NavLink>
+                    </div>
                   )}
                 </div>
 
@@ -363,6 +380,15 @@ function App() {
             element={
               <RoleBasedRoute allowedRoles={['admin', 'store_manager']}>
                 <IngredientsManager />
+              </RoleBasedRoute>
+            }
+          />
+
+          <Route
+            path="/stock"
+            element={
+              <RoleBasedRoute allowedRoles={['admin', 'store_manager']}>
+                <StockRegister />
               </RoleBasedRoute>
             }
           />
