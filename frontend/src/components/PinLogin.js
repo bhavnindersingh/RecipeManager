@@ -13,7 +13,7 @@ const PinLogin = () => {
   const redirectByRole = useCallback((role) => {
     switch (role) {
       case 'admin':
-        navigate('/manager');
+        navigate('/dashboard');
         break;
       case 'server':
         navigate('/pos');
@@ -25,7 +25,7 @@ const PinLogin = () => {
         navigate('/ingredients');
         break;
       default:
-        navigate('/manager');
+        navigate('/dashboard');
     }
   }, [navigate]);
 

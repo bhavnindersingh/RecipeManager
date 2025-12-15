@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { stockService } from '../../services/stockService';
-import { ingredientService } from '../../services/supabaseService';
 import StockListItem from './StockListItem';
 import StockEditModal from './StockEditModal';
 import '../../styles/StockRegister.css';
 
 const StockRegister = () => {
   // State management
-  const [ingredients, setIngredients] = useState([]);
   const [stockLevels, setStockLevels] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({
@@ -38,14 +36,12 @@ const StockRegister = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [ingredientsData, stockData, summaryData, recentTx] = await Promise.all([
-        ingredientService.getAllIngredients(),
+      const [stockData, summaryData, recentTx] = await Promise.all([
         stockService.getAllStockLevels(),
         stockService.getStockSummary(),
         stockService.getTransactions({ limit: 50 })
       ]);
 
-      setIngredients(ingredientsData);
       setStockLevels(stockData);
       setSummary(summaryData);
       setTransactions(recentTx);
@@ -144,12 +140,12 @@ const StockRegister = () => {
   const filteredStockLevels = stockLevels
     .filter(stock => {
       const matchesSearch = stock.ingredient?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            stock.ingredient?.category.toLowerCase().includes(searchTerm.toLowerCase());
+        stock.ingredient?.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = filterStatus === 'all' ||
-                           (filterStatus === 'low' && stock.current_quantity < stock.minimum_quantity) ||
-                           (filterStatus === 'out' && stock.current_quantity === 0) ||
-                           (filterStatus === 'ok' && stock.current_quantity >= stock.minimum_quantity);
+        (filterStatus === 'low' && stock.current_quantity < stock.minimum_quantity) ||
+        (filterStatus === 'out' && stock.current_quantity === 0) ||
+        (filterStatus === 'ok' && stock.current_quantity >= stock.minimum_quantity);
 
       return matchesSearch && matchesStatus;
     })
@@ -168,7 +164,7 @@ const StockRegister = () => {
   const filteredTransactions = transactions.filter(tx => {
     const matchesType = filterType === 'all' || tx.transaction_type === filterType;
     const matchesSearch = searchTerm === '' ||
-                         tx.ingredient.name.toLowerCase().includes(searchTerm.toLowerCase());
+      tx.ingredient.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesType && matchesSearch;
   });
 
