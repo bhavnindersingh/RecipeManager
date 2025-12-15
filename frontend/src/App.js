@@ -9,6 +9,7 @@ import './styles/shared.css';  // Import FIRST to load CSS variables
 import './styles/App.css';
 
 // Code splitting: Lazy load heavy components
+const Dashboard = lazy(() => import('./components/Dashboard'));
 const IngredientsManager = lazy(() => import('./components/IngredientsManager'));
 const RecipeForm = lazy(() => import('./components/RecipeForm'));
 const RecipeManager = lazy(() => import('./components/RecipeManager'));
@@ -249,13 +250,21 @@ function App() {
                 <div className="sidebar-content">
                   {currentUser.role === 'admin' && (
                     <>
-                      <NavLink to="/manager" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                        <span className="sidebar-icon">🍽️</span>
-                        Recipes
+                      <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">🏠</span>
+                        Dashboard
+                      </NavLink>
+                      <NavLink to="/data" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">💰</span>
+                        Sales Data
                       </NavLink>
                       <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                         <span className="sidebar-icon">🥕</span>
                         Ingredients
+                      </NavLink>
+                      <NavLink to="/manager" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">🍽️</span>
+                        Recipes
                       </NavLink>
                       <NavLink to="/create" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                         <span className="sidebar-icon">➕</span>
@@ -264,10 +273,6 @@ function App() {
                       <NavLink to="/analytics" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                         <span className="sidebar-icon">📊</span>
                         Analytics
-                      </NavLink>
-                      <NavLink to="/data" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                        <span className="sidebar-icon">💰</span>
-                        Sales Data
                       </NavLink>
                     </>
                   )}
@@ -310,7 +315,7 @@ function App() {
 
           <Route path="/" element={
             currentUser ? (
-              currentUser.role === 'admin' ? <Navigate to="/manager" replace /> :
+              currentUser.role === 'admin' ? <Navigate to="/dashboard" replace /> :
               currentUser.role === 'server' ? <Navigate to="/pos" replace /> :
               currentUser.role === 'kitchen' ? <Navigate to="/kds" replace /> :
               currentUser.role === 'store_manager' ? <Navigate to="/ingredients" replace /> :
@@ -319,7 +324,13 @@ function App() {
               <Navigate to="/pin-login" replace />
             )
           } />
-          
+
+          <Route path="/dashboard" element={
+            <RoleBasedRoute allowedRoles={['admin']}>
+              <Dashboard recipes={recipes} />
+            </RoleBasedRoute>
+          } />
+
           <Route path="/manager" element={
             <RoleBasedRoute allowedRoles={['admin']}>
               <RecipeManager
@@ -398,11 +409,7 @@ function App() {
             path="/data"
             element={
               <RoleBasedRoute allowedRoles={['admin']}>
-                <DataManager
-                  recipes={recipes}
-                  ingredients={ingredients}
-                  onSalesUpdate={handleSalesUpdate}
-                />
+                <DataManager />
               </RoleBasedRoute>
             }
           />
@@ -427,7 +434,7 @@ function App() {
             }
           />
 
-            <Route path="*" element={<Navigate to="/manager" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>
       </main>

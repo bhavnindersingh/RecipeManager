@@ -18,11 +18,12 @@ const DeliveryOrderForm = ({ platform, recipes, onOrderComplete }) => {
   // Get unique categories
   const categories = ['all', ...new Set(recipes.map(r => r.category))];
 
-  // Filter recipes
+  // Filter recipes - only show production recipes in POS
   const filteredRecipes = recipes.filter(recipe => {
+    const isProduction = recipe.is_production_recipe !== false; // Default true for backward compatibility
     const matchesCategory = selectedCategory === 'all' || recipe.category === selectedCategory;
     const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return isProduction && matchesCategory && matchesSearch;
   });
 
   // Add item to cart

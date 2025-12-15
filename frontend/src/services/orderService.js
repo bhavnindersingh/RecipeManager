@@ -463,6 +463,205 @@ export const orderService = {
       console.error('Error fetching delivery orders:', error);
       throw error;
     }
+  },
+
+  /**
+   * Get paginated orders with filters and payment details
+   * @param {Object} options - Pagination and filter options
+   * @param {number} options.page - Page number (1-indexed)
+   * @param {number} options.limit - Items per page (default: 100)
+   * @param {string} options.orderType - Filter by order type
+   * @param {string} options.paymentStatus - Filter by payment status
+   * @param {string} options.paymentMethod - Filter by payment method
+   * @param {string} options.dateFrom - Start date (ISO string)
+   * @param {string} options.dateTo - End date (ISO string)
+   * @param {string} options.search - Search order number or customer name
+   * @returns {Promise<Object>} { orders, total, page, totalPages }
+   */
+  async getOrdersPaginated(options = {}) {
+    try {
+      const {
+        page = 1,
+        limit = 100,
+        orderType,
+        paymentStatus,
+        paymentMethod,
+        dateFrom,
+        dateTo,
+        search
+      } = options;
+
+      const offset = (page - 1) * limit;
+
+      // Build query for orders with payments
+      let query = supabase
+        .from('orders')
+        .select(`
+          *,
+          created_by_profile:profiles!created_by(id, name, role),
+          order_items(
+            id,
+            quantity,
+            unit_price,
+            item_status,
+            notes,
+            recipe:recipes(id, name, category)
+          ),
+          payments(
+            id,
+            amount,
+            payment_method,
+            payment_status,
+            transaction_reference,
+            cash_received,
+            change_amount,
+            paid_by_name
+          )
+        `, { count: 'exact' });
+
+      // Apply filters
+      if (orderType && orderType !== 'all') {
+        query = query.eq('order_type', orderType);
+      }
+
+      if (paymentStatus && paymentStatus !== 'all') {
+        query = query.eq('payment_status', paymentStatus);
+      }
+
+      if (dateFrom) {
+        query = query.gte('created_at', dateFrom);
+      }
+
+      if (dateTo) {
+        query = query.lte('created_at', dateTo);
+      }
+
+      if (search) {
+        query = query.or(`order_number.ilike.%${search}%,customer_name.ilike.%${search}%`);
+      }
+
+      // Apply pagination and ordering
+      query = query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      const { data: orders, error, count } = await query;
+
+      if (error) throw error;
+
+      // Filter by payment method if needed (done in memory since payments is a joined table)
+      let filteredOrders = orders || [];
+      if (paymentMethod && paymentMethod !== 'all') {
+        filteredOrders = filteredOrders.filter(order =>
+          order.payments && order.payments.some(p => p.payment_method === paymentMethod)
+        );
+      }
+
+      const totalPages = Math.ceil((count || 0) / limit);
+
+      return {
+        orders: filteredOrders,
+        total: count || 0,
+        page,
+        totalPages,
+        limit
+      };
+    } catch (error) {
+      console.error('Error fetching paginated orders:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get order count with filters
+   * @param {Object} filters - Filter options
+   * @returns {Promise<number>} Total count of filtered orders
+   */
+  async getOrdersCount(filters = {}) {
+    try {
+      let query = supabase
+        .from('orders')
+        .select('id', { count: 'exact', head: true });
+
+      // Apply filters
+      if (filters.orderType && filters.orderType !== 'all') {
+        query = query.eq('order_type', filters.orderType);
+      }
+
+      if (filters.paymentStatus && filters.paymentStatus !== 'all') {
+        query = query.eq('payment_status', filters.paymentStatus);
+      }
+
+      if (filters.dateFrom) {
+        query = query.gte('created_at', filters.dateFrom);
+      }
+
+      if (filters.dateTo) {
+        query = query.lte('created_at', filters.dateTo);
+      }
+
+      if (filters.search) {
+        query = query.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
+      }
+
+      const { count, error } = await query;
+
+      if (error) throw error;
+      return count || 0;
+    } catch (error) {
+      console.error('Error counting orders:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get order with full payment details
+   * @param {number} orderId - Order ID
+   * @returns {Promise<Object>} Order with payments and splits
+   */
+  async getOrderWithPayments(orderId) {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          created_by_profile:profiles!created_by(id, name, role),
+          order_items(
+            id,
+            quantity,
+            unit_price,
+            item_status,
+            notes,
+            recipe:recipes(*)
+          ),
+          payments(
+            id,
+            amount,
+            payment_method,
+            payment_status,
+            transaction_reference,
+            cash_received,
+            change_amount,
+            paid_by_name,
+            created_at,
+            payment_splits(
+              id,
+              amount,
+              payment_method,
+              transaction_reference,
+              paid_by_name
+            )
+          )
+        `)
+        .eq('id', orderId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching order with payments:', error);
+      throw error;
+    }
   }
 };
 

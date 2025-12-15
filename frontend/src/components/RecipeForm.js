@@ -26,6 +26,7 @@ const emptyRecipe = {
   qr_menu_ready: false,
   website_menu_ready: false,
   available_for_delivery: false,
+  is_production_recipe: true,
   delivery_image_url: '',
   ingredients: [],
   created_at: null,
@@ -360,6 +361,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         qr_menu_ready: Boolean(recipe.qr_menu_ready),
         website_menu_ready: Boolean(recipe.website_menu_ready),
         available_for_delivery: Boolean(recipe.available_for_delivery),
+        is_production_recipe: recipe.is_production_recipe !== false,
         image_url: imageUrl,
         delivery_image_url: deliveryImageUrl,
         ingredients: currentIngredients.map(ing => ({
@@ -625,6 +627,24 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="form-group production-recipe-group">
+            <div className="checkbox-item production-checkbox">
+              <input
+                type="checkbox"
+                id="is_production_recipe"
+                name="is_production_recipe"
+                checked={recipe.is_production_recipe !== false}
+                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.checked }))}
+                className="styled-checkbox"
+                disabled={isViewMode}
+              />
+              <label htmlFor="is_production_recipe" className="checkbox-label">
+                Production Recipe
+                <span className="checkbox-hint">Include this recipe in POS for customer orders</span>
+              </label>
+            </div>
           </div>
 
           <div className="form-group">
