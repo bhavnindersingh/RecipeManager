@@ -234,10 +234,10 @@ const DataManager = () => {
   return (
     <div className="data-manager orders-viewer">
       <div className="page-title-card">
-        <h1 className="page-title">Sales Data - Orders</h1>
+        <h1 className="page-title">Order Data</h1>
         <div className="data-buttons">
           <button className="icon-btn" onClick={handleExportOrders} title="Export to Excel">
-            <img src={process.env.PUBLIC_URL + '/export-icon.svg'} alt="Export" className="btn-icon" />
+            Export
           </button>
         </div>
       </div>

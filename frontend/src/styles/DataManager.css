@@ -74,22 +74,35 @@
   gap: 1rem;
 }
 
-.icon-btn {
-  padding: 0.5rem;
-  background: none;
+/* Override icon-btn from App.css for better visibility */
+.data-buttons .icon-btn {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  padding: 0.625rem 1rem;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(148, 76, 104, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
 }
 
-.icon-btn:hover {
-  transform: scale(1.1);
+.data-buttons .icon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(148, 76, 104, 0.3);
 }
 
-.btn-icon {
-  width: 24px;
-  height: 24px;
-  opacity: 0.8;
+.data-buttons .btn-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+  /* Make icon white */
+  opacity: 1;
+  /* Override the 0.8 opacity */
 }
 
 .import-history {
@@ -163,13 +176,7 @@
   color: #666;
 }
 
-.page-title {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--primary);
-  letter-spacing: -0.5px;
-}
+/* Removed duplicate .page-title definition - using App.css version */
 
 .history-section {
   margin: 1rem 0;
@@ -241,22 +248,7 @@
   margin-top: 0.5rem;
 }
 
-.page-title-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.page-title {
-  margin: 0;
-  color: #333;
-  font-size: 1.5rem;
-}
+/* Removed duplicate .page-title-card and .page-title - using App.css versions */
 
 /* Orders Viewer Styles */
 .orders-viewer {

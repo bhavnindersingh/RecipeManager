@@ -214,7 +214,6 @@ const StockRegister = () => {
         <h1 className="page-title">Stock Register</h1>
         <div className="header-actions">
           <button className="btn-export" onClick={handleExport} title="Export to Excel">
-            <span className="btn-icon">📤</span>
             Export
           </button>
         </div>

@@ -59,6 +59,50 @@ function App() {
   });
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Sidebar group state (persisted in localStorage)
+  const [openGroups, setOpenGroups] = useState(() => {
+    const saved = localStorage.getItem('sidebarGroups');
+    return saved ? JSON.parse(saved) : { store: true, chef: true, sales: true };
+  });
+
+  // Save openGroups to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('sidebarGroups', JSON.stringify(openGroups));
+  }, [openGroups]);
+
+  // Toggle sidebar group
+  const toggleGroup = (groupName) => {
+    setOpenGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
+
+  // Sidebar Group Component
+  const SidebarGroup = ({ title, icon, groupKey, children }) => {
+    const isOpen = openGroups[groupKey];
+
+    return (
+      <div className="sidebar-group">
+        <div
+          className="sidebar-group-header"
+          onClick={() => toggleGroup(groupKey)}
+        >
+          <div className="sidebar-group-header-content">
+            <span className="sidebar-icon">{icon}</span>
+            <span className="sidebar-group-title-text">{title}</span>
+          </div>
+          <span className={`sidebar-group-chevron ${isOpen ? 'open' : ''}`}>
+            ▶
+          </span>
+        </div>
+        <div className={`sidebar-group-links ${isOpen ? 'open' : ''}`}>
+          {children}
+        </div>
+      </div>
+    );
+  };
+
   // Save editingRecipe to sessionStorage whenever it changes
   useEffect(() => {
     if (editingRecipe) {
@@ -244,13 +288,8 @@ function App() {
                         <span className="sidebar-icon">🏠</span>
                         Dashboard
                       </NavLink>
-                      <NavLink to="/data" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                        <span className="sidebar-icon">💰</span>
-                        Sales Data
-                      </NavLink>
 
-                      <div className="sidebar-group">
-                        <div className="sidebar-group-title">Store</div>
+                      <SidebarGroup title="Store" icon="🏪" groupKey="store">
                         <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                           <span className="sidebar-icon">🥕</span>
                           Ingredients
@@ -259,20 +298,29 @@ function App() {
                           <span className="sidebar-icon">📦</span>
                           Stock Register
                         </NavLink>
-                      </div>
+                      </SidebarGroup>
 
-                      <NavLink to="/manager" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                        <span className="sidebar-icon">🍽️</span>
-                        Recipes
-                      </NavLink>
-                      <NavLink to="/create" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                        <span className="sidebar-icon">➕</span>
-                        Create Recipe
-                      </NavLink>
-                      <NavLink to="/analytics" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                        <span className="sidebar-icon">📊</span>
-                        Analytics
-                      </NavLink>
+                      <SidebarGroup title="Chef" icon="👨‍🍳" groupKey="chef">
+                        <NavLink to="/create" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">➕</span>
+                          Create Recipe
+                        </NavLink>
+                        <NavLink to="/manager" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">🍽️</span>
+                          Recipes
+                        </NavLink>
+                      </SidebarGroup>
+
+                      <SidebarGroup title="Sales" icon="💰" groupKey="sales">
+                        <NavLink to="/data" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">📊</span>
+                          Order Data
+                        </NavLink>
+                        <NavLink to="/analytics" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">📈</span>
+                          Sales Analysis
+                        </NavLink>
+                      </SidebarGroup>
                     </>
                   )}
                   {(currentUser.role === 'admin' || currentUser.role === 'server') && (
@@ -288,8 +336,7 @@ function App() {
                     </NavLink>
                   )}
                   {currentUser.role === 'store_manager' && (
-                    <div className="sidebar-group">
-                      <div className="sidebar-group-title">Store</div>
+                    <SidebarGroup title="Store" icon="🏪" groupKey="store">
                       <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                         <span className="sidebar-icon">🥕</span>
                         Ingredients
@@ -298,7 +345,7 @@ function App() {
                         <span className="sidebar-icon">📦</span>
                         Stock Register
                       </NavLink>
-                    </div>
+                    </SidebarGroup>
                   )}
                 </div>
 

@@ -13,14 +13,18 @@ const IngredientsManager = () => {
     unit: '',
     cost: '',
     category: 'Vegetables & Fruits',
-    minimum_stock: '10'
+    minimum_stock: '10',
+    vendor_name: '',
+    vendor_phone: ''
   });
   const [error, setError] = useState({ message: '', type: '' });
   const [editingId, setEditingId] = useState(null);
   const [editingValues, setEditingValues] = useState({
     cost: '',
     category: '',
-    minimum_stock: ''
+    minimum_stock: '',
+    vendor_name: '',
+    vendor_phone: ''
   });
 
   const showToast = (message, type = 'success') => {
@@ -85,7 +89,9 @@ const IngredientsManager = () => {
         cost: Number(newIngredient.cost),
         unit: newIngredient.unit.trim(),
         category: newIngredient.category.trim(),
-        minimum_stock: Number(newIngredient.minimum_stock)
+        minimum_stock: Number(newIngredient.minimum_stock),
+        vendor_name: newIngredient.vendor_name.trim() || null,
+        vendor_phone: newIngredient.vendor_phone.trim() || null
       });
 
       // Add new ingredient at the beginning of the list
@@ -101,7 +107,9 @@ const IngredientsManager = () => {
         unit: '',
         cost: '',
         category: 'Vegetables & Fruits',
-        minimum_stock: '10'
+        minimum_stock: '10',
+        vendor_name: '',
+        vendor_phone: ''
       });
 
       showToast('Ingredient added successfully');
@@ -219,7 +227,9 @@ const IngredientsManager = () => {
     setEditingValues({
       cost: ingredient.cost.toString(),
       category: ingredient.category,
-      minimum_stock: (ingredient.minimum_stock || 10).toString()
+      minimum_stock: (ingredient.minimum_stock || 10).toString(),
+      vendor_name: ingredient.vendor_name || '',
+      vendor_phone: ingredient.vendor_phone || ''
     });
   };
 
@@ -228,7 +238,9 @@ const IngredientsManager = () => {
     setEditingValues({
       cost: '',
       category: '',
-      minimum_stock: ''
+      minimum_stock: '',
+      vendor_name: '',
+      vendor_phone: ''
     });
   };
 
@@ -239,7 +251,9 @@ const IngredientsManager = () => {
         unit: ingredient.unit,
         cost: parseFloat(editingValues.cost),
         category: editingValues.category,
-        minimum_stock: parseFloat(editingValues.minimum_stock)
+        minimum_stock: parseFloat(editingValues.minimum_stock),
+        vendor_name: editingValues.vendor_name.trim() || null,
+        vendor_phone: editingValues.vendor_phone.trim() || null
       });
 
       setIngredients(prev => prev.map(ing =>
@@ -248,7 +262,9 @@ const IngredientsManager = () => {
               ...ing,
               cost: parseFloat(editingValues.cost),
               category: editingValues.category,
-              minimum_stock: parseFloat(editingValues.minimum_stock)
+              minimum_stock: parseFloat(editingValues.minimum_stock),
+              vendor_name: editingValues.vendor_name.trim() || null,
+              vendor_phone: editingValues.vendor_phone.trim() || null
             }
           : ing
       ));
@@ -256,7 +272,9 @@ const IngredientsManager = () => {
       setEditingValues({
         cost: '',
         category: '',
-        minimum_stock: ''
+        minimum_stock: '',
+        vendor_name: '',
+        vendor_phone: ''
       });
       showToast('Ingredient updated successfully', 'success');
     } catch (error) {
@@ -310,7 +328,6 @@ const IngredientsManager = () => {
               onClick={() => document.getElementById('import-file').click()}
               title="Import from Excel"
             >
-              <span className="btn-icon">📥</span>
               Import
             </button>
             <button
@@ -318,7 +335,6 @@ const IngredientsManager = () => {
               onClick={exportIngredients}
               title="Export to Excel"
             >
-              <span className="btn-icon">📤</span>
               Export
             </button>
           </div>
@@ -401,6 +417,29 @@ const IngredientsManager = () => {
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Current Vendors</label>
+              <input
+                type="text"
+                name="vendor_name"
+                className="form-input"
+                value={newIngredient.vendor_name}
+                onChange={handleInputChange}
+                placeholder="Vendor or supplier name (optional)"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Phone Number</label>
+              <input
+                type="tel"
+                name="vendor_phone"
+                className="form-input"
+                value={newIngredient.vendor_phone}
+                onChange={handleInputChange}
+                placeholder="Vendor contact number (optional)"
+                pattern="[0-9]{10,15}"
+              />
             </div>
           </div>
           <div className="form-actions">
