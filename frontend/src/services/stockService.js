@@ -16,10 +16,10 @@ export const stockService = {
           .order('current_quantity', { ascending: true }),
         supabase
           .from('ingredients')
-          .select('id, name, unit, category, cost'),
+          .select('id, name, unit, category, cost, minimum_stock'),
         supabase
           .from('stock_settings')
-          .select('ingredient_id, min_stock_level, reorder_quantity, storage_location')
+          .select('ingredient_id, reorder_quantity, storage_location')
       ]);
 
       // Check for errors
@@ -68,12 +68,12 @@ export const stockService = {
           .single(),
         supabase
           .from('ingredients')
-          .select('*')
+          .select('id, name, unit, category, cost, minimum_stock')
           .eq('id', ingredientId)
           .single(),
         supabase
           .from('stock_settings')
-          .select('*')
+          .select('ingredient_id, reorder_quantity, storage_location')
           .eq('ingredient_id', ingredientId)
           .maybeSingle() // Use maybeSingle as settings might not exist
       ]);
@@ -287,7 +287,7 @@ export const stockService = {
           .select('ingredient_id, current_quantity, minimum_quantity, unit_cost_avg'),
         supabase
           .from('ingredients')
-          .select('id, cost'),
+          .select('id, cost, minimum_stock'),
         // Get recent transactions count (last 24 hours)
         supabase
           .from('stock_transactions')

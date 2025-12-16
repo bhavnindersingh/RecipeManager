@@ -97,7 +97,16 @@ const PinLogin = () => {
     <div className="pin-login-container">
       <div className="pin-login-card">
         <div className="pin-login-header">
-          <h1 className="pin-login-title">Conscious Cafe</h1>
+          <img
+            src="/android-icon-192x192.png"
+            alt="Conscious Cafe Logo"
+            className="pin-login-logo"
+          />
+          <img
+            src="/conscious-cafe-logo.svg"
+            alt="Conscious Cafe"
+            className="pin-login-title-img"
+          />
           <h2 className="pin-login-subtitle">Enter Your PIN</h2>
         </div>
 

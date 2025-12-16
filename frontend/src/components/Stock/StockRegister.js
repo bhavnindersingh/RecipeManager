@@ -29,7 +29,8 @@ const StockRegister = () => {
 
   // Filter State
   const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('low'); // Default to low stock
+  const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name'); // name, stock, category
 
   // Load data
@@ -136,6 +137,34 @@ const StockRegister = () => {
     return 'good';
   };
 
+  // Get category emoji
+  const getCategoryEmoji = (category) => {
+    const categoryEmojis = {
+      'Vegetables': '🥕',
+      'Fruits': '🍎',
+      'Dairy': '🥛',
+      'Grains': '🌾',
+      'Spices': '🌶️',
+      'Meat': '🥩',
+      'Seafood': '🐟',
+      'Beverages': '☕',
+      'Bakery': '🍞',
+      'Oil': '🫗',
+      'Default': '📦'
+    };
+    return categoryEmojis[category] || categoryEmojis['Default'];
+  };
+
+  // Extract unique categories from stock levels
+  const categories = [...new Set(stockLevels.map(s => s.ingredient?.category).filter(Boolean))].sort();
+
+  // Get category counts
+  const categoryCounts = stockLevels.reduce((acc, stock) => {
+    const cat = stock.ingredient?.category || 'Uncategorized';
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {});
+
   // Filter and sort stock levels
   const filteredStockLevels = stockLevels
     .filter(stock => {
@@ -147,7 +176,10 @@ const StockRegister = () => {
         (filterStatus === 'out' && stock.current_quantity === 0) ||
         (filterStatus === 'ok' && stock.current_quantity >= stock.minimum_quantity);
 
-      return matchesSearch && matchesStatus;
+      const matchesCategory = filterCategory === 'all' ||
+        stock.ingredient?.category === filterCategory;
+
+      return matchesSearch && matchesStatus && matchesCategory;
     })
     .sort((a, b) => {
       if (sortBy === 'name') {
@@ -261,6 +293,32 @@ const StockRegister = () => {
               <option value="stock">Sort: Stock Level</option>
               <option value="category">Sort: Category</option>
             </select>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="category-filter-bar">
+            <button
+              className={`category-pill ${filterCategory === 'all' ? 'active' : ''}`}
+              onClick={() => setFilterCategory('all')}
+            >
+              <span className="category-icon">📦</span>
+              All ({stockLevels.length})
+            </button>
+            {categories.map(category => (
+              <button
+                key={category}
+                className={`category-pill ${filterCategory === category ? 'active' : ''}`}
+                onClick={() => setFilterCategory(category)}
+              >
+                <span className="category-icon">{getCategoryEmoji(category)}</span>
+                {category} ({categoryCounts[category] || 0})
+              </button>
+            ))}
+          </div>
+
+          {/* Results Counter */}
+          <div className="results-counter">
+            Showing {filteredStockLevels.length} of {stockLevels.length} items
           </div>
 
           {/* Stock List */}

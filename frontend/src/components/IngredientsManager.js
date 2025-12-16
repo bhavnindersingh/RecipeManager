@@ -12,13 +12,15 @@ const IngredientsManager = () => {
     name: '',
     unit: '',
     cost: '',
-    category: 'Vegetables & Fruits'
+    category: 'Vegetables & Fruits',
+    minimum_stock: '10'
   });
   const [error, setError] = useState({ message: '', type: '' });
   const [editingId, setEditingId] = useState(null);
   const [editingValues, setEditingValues] = useState({
     cost: '',
-    category: ''
+    category: '',
+    minimum_stock: ''
   });
 
   const showToast = (message, type = 'success') => {
@@ -82,7 +84,8 @@ const IngredientsManager = () => {
         name: newIngredient.name.trim(),
         cost: Number(newIngredient.cost),
         unit: newIngredient.unit.trim(),
-        category: newIngredient.category.trim()
+        category: newIngredient.category.trim(),
+        minimum_stock: Number(newIngredient.minimum_stock)
       });
 
       // Add new ingredient at the beginning of the list
@@ -97,7 +100,8 @@ const IngredientsManager = () => {
         name: '',
         unit: '',
         cost: '',
-        category: 'Vegetables & Fruits'
+        category: 'Vegetables & Fruits',
+        minimum_stock: '10'
       });
 
       showToast('Ingredient added successfully');
@@ -127,6 +131,7 @@ const IngredientsManager = () => {
       Name: ingredient.name,
       Unit: ingredient.unit,
       'Cost (₹)': ingredient.cost,
+      'Min Stock': ingredient.minimum_stock || 10,
       Category: ingredient.category
     }));
 
@@ -139,6 +144,7 @@ const IngredientsManager = () => {
       { wch: 30 }, // Name
       { wch: 10 }, // Unit
       { wch: 12 }, // Cost
+      { wch: 12 }, // Min Stock
       { wch: 20 }  // Category
     ];
     ws['!cols'] = colWidths;
@@ -174,6 +180,7 @@ const IngredientsManager = () => {
             name: row.Name || row.name,
             unit: row.Unit || row.unit,
             cost: Number(row['Cost (₹)'] || row.cost || 0),
+            minimum_stock: Number(row['Min Stock'] || row.minimum_stock || 10),
             category: row.Category || row.category || 'Vegetables & Fruits'
           };
 
@@ -211,7 +218,8 @@ const IngredientsManager = () => {
     setEditingId(ingredient.id);
     setEditingValues({
       cost: ingredient.cost.toString(),
-      category: ingredient.category
+      category: ingredient.category,
+      minimum_stock: (ingredient.minimum_stock || 10).toString()
     });
   };
 
@@ -219,7 +227,8 @@ const IngredientsManager = () => {
     setEditingId(null);
     setEditingValues({
       cost: '',
-      category: ''
+      category: '',
+      minimum_stock: ''
     });
   };
 
@@ -229,18 +238,25 @@ const IngredientsManager = () => {
         name: ingredient.name,
         unit: ingredient.unit,
         cost: parseFloat(editingValues.cost),
-        category: editingValues.category
+        category: editingValues.category,
+        minimum_stock: parseFloat(editingValues.minimum_stock)
       });
 
       setIngredients(prev => prev.map(ing =>
         ing.id === ingredient.id
-          ? { ...ing, cost: parseFloat(editingValues.cost), category: editingValues.category }
+          ? {
+              ...ing,
+              cost: parseFloat(editingValues.cost),
+              category: editingValues.category,
+              minimum_stock: parseFloat(editingValues.minimum_stock)
+            }
           : ing
       ));
       setEditingId(null);
       setEditingValues({
         cost: '',
-        category: ''
+        category: '',
+        minimum_stock: ''
       });
       showToast('Ingredient updated successfully', 'success');
     } catch (error) {
@@ -263,7 +279,7 @@ const IngredientsManager = () => {
     const { name, value } = e.target;
     setNewIngredient(prev => ({
       ...prev,
-      [name]: name === 'cost' ? (value === '' ? '' : parseFloat(value) || 0) : value
+      [name]: (name === 'cost' || name === 'minimum_stock') ? (value === '' ? '' : parseFloat(value) || 0) : value
     }));
     setError({ message: '', type: '' });
   };
@@ -359,6 +375,20 @@ const IngredientsManager = () => {
               />
             </div>
             <div className="form-group">
+              <label className="form-label">Minimum Stock Level</label>
+              <input
+                type="number"
+                name="minimum_stock"
+                className="form-input"
+                value={newIngredient.minimum_stock}
+                onChange={handleInputChange}
+                placeholder="Minimum stock alert level"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+            <div className="form-group">
               <label className="form-label">Category</label>
               <select
                 name="category"
@@ -406,6 +436,7 @@ const IngredientsManager = () => {
                 <th>Name</th>
                 <th>Unit</th>
                 <th>Cost (₹)</th>
+                <th>Min Stock</th>
                 <th>Category</th>
                 <th>Actions</th>
               </tr>
@@ -427,6 +458,20 @@ const IngredientsManager = () => {
                       />
                     ) : (
                       `₹${ingredient.cost}`
+                    )}
+                  </td>
+                  <td>
+                    {editingId === ingredient.id ? (
+                      <input
+                        type="number"
+                        value={editingValues.minimum_stock}
+                        onChange={(e) => setEditingValues(prev => ({ ...prev, minimum_stock: e.target.value }))}
+                        className="edit-input"
+                        min="0"
+                        step="0.01"
+                      />
+                    ) : (
+                      `${ingredient.minimum_stock || 10} ${ingredient.unit}`
                     )}
                   </td>
                   <td>
@@ -487,7 +532,7 @@ const IngredientsManager = () => {
               ))}
               {filteredIngredients.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="empty-message">
+                  <td colSpan="6" className="empty-message">
                     {ingredients.length === 0 ? 'No ingredients added yet' : 'No matching ingredients found'}
                   </td>
                 </tr>
