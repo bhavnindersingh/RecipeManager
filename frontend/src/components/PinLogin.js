@@ -8,7 +8,7 @@ const PinLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const MAX_PIN_LENGTH = 4;
+  const MAX_PIN_LENGTH = 6;
 
   const redirectByRole = useCallback((role) => {
     switch (role) {
@@ -51,7 +51,7 @@ const PinLogin = () => {
 
   const handleSubmit = async () => {
     if (pin.length !== MAX_PIN_LENGTH) {
-      setError('Please enter a 4-digit PIN');
+      setError('Please enter a 6-digit PIN');
       return;
     }
 
@@ -107,7 +107,7 @@ const PinLogin = () => {
             alt="Conscious Cafe"
             className="pin-login-title-img"
           />
-          <h2 className="pin-login-subtitle">Enter Your PIN</h2>
+          <h2 className="pin-login-subtitle">Enter Your Secret Pin</h2>
         </div>
 
         <div className="pin-display">
@@ -158,12 +158,12 @@ const PinLogin = () => {
         </div>
 
         <div className="pin-help-text">
-          <p>Default PINs:</p>
+          <p>Default PINs (Dev):</p>
           <ul>
-            <li>Admin: 0000</li>
-            <li>Server: 1111</li>
-            <li>Kitchen: 2222</li>
-            <li>Store Manager: 3333</li>
+            <li>Admin: 000000</li>
+            <li>Server: 111111</li>
+            <li>Kitchen: 222222</li>
+            <li>Store Manager: 333333</li>
           </ul>
         </div>
       </div>

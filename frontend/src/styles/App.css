@@ -167,8 +167,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Sidebar Navigation */
@@ -193,6 +198,7 @@
   from {
     transform: translateX(-100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -383,7 +389,7 @@
   background: rgba(0, 0, 0, 0.2);
   /* Semi-transparent dark for contrast */
   backdrop-filter: blur(5px);
-  padding: 1.5rem;
+  padding: 0.75rem;
   margin-top: auto;
   color: rgba(255, 255, 255, 0.9);
   border-top: 1px solid rgba(255, 255, 255, 0.2);

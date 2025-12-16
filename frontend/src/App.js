@@ -46,7 +46,7 @@ const LoadingFallback = () => (
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const [ingredients, setIngredients] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [editingRecipe, setEditingRecipe] = useState(() => {
@@ -391,135 +391,135 @@ function App() {
           <Routes>
             <Route path="/pin-login" element={<PinLogin />} />
 
-          <Route path="/" element={
-            currentUser ? (
-              currentUser.role === 'admin' ? <Navigate to="/dashboard" replace /> :
-              currentUser.role === 'server' ? <Navigate to="/pos" replace /> :
-              currentUser.role === 'kitchen' ? <Navigate to="/kds" replace /> :
-              currentUser.role === 'store_manager' ? <Navigate to="/ingredients" replace /> :
-              <Navigate to="/pin-login" replace />
-            ) : (
-              <Navigate to="/pin-login" replace />
-            )
-          } />
+            <Route path="/" element={
+              currentUser ? (
+                currentUser.role === 'admin' ? <Navigate to="/dashboard" replace /> :
+                  currentUser.role === 'server' ? <Navigate to="/pos" replace /> :
+                    currentUser.role === 'kitchen' ? <Navigate to="/kds" replace /> :
+                      currentUser.role === 'store_manager' ? <Navigate to="/ingredients" replace /> :
+                        <Navigate to="/pin-login" replace />
+              ) : (
+                <Navigate to="/pin-login" replace />
+              )
+            } />
 
-          <Route path="/dashboard" element={
-            <RoleBasedRoute allowedRoles={['admin']}>
-              <Dashboard recipes={recipes} />
-            </RoleBasedRoute>
-          } />
-
-          <Route path="/manager" element={
-            <RoleBasedRoute allowedRoles={['admin']}>
-              <RecipeManager
-                recipes={recipes}
-                onEditRecipe={handleEditRecipe}
-                onDeleteRecipe={handleDeleteRecipe}
-                onViewRecipe={handleViewRecipe}
-              />
-            </RoleBasedRoute>
-          } />
-
-          <Route path="/manager/recipe-editor" element={
-            <RoleBasedRoute allowedRoles={['admin']}>
-              <RecipeForm
-                ingredients={ingredients}
-                onSubmit={handleRecipeSubmit}
-                editingRecipe={editingRecipe}
-                onCancel={() => {
-                  setEditingRecipe(null);
-                  navigate('/manager');
-                }}
-                mode={editingRecipe ? 'edit' : 'create'}
-                recipes={recipes}
-              />
-            </RoleBasedRoute>
-          } />
-
-          <Route path="/manager/show-recipe" element={
-            <RoleBasedRoute allowedRoles={['admin']}>
-              <RecipeForm
-                ingredients={ingredients}
-                viewingRecipe={viewingRecipe}
-                mode="view"
-                recipes={recipes}
-              />
-            </RoleBasedRoute>
-          } />
-
-          <Route
-            path="/ingredients"
-            element={
-              <RoleBasedRoute allowedRoles={['admin', 'store_manager']}>
-                <IngredientsManager />
+            <Route path="/dashboard" element={
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <Dashboard recipes={recipes} />
               </RoleBasedRoute>
-            }
-          />
+            } />
 
-          <Route
-            path="/stock"
-            element={
-              <RoleBasedRoute allowedRoles={['admin', 'store_manager']}>
-                <StockRegister />
+            <Route path="/manager" element={
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <RecipeManager
+                  recipes={recipes}
+                  onEditRecipe={handleEditRecipe}
+                  onDeleteRecipe={handleDeleteRecipe}
+                  onViewRecipe={handleViewRecipe}
+                />
               </RoleBasedRoute>
-            }
-          />
+            } />
 
-          <Route
-            path="/create"
-            element={
+            <Route path="/manager/recipe-editor" element={
               <RoleBasedRoute allowedRoles={['admin']}>
                 <RecipeForm
                   ingredients={ingredients}
-                  mode="create"
                   onSubmit={handleRecipeSubmit}
+                  editingRecipe={editingRecipe}
                   onCancel={() => {
                     setEditingRecipe(null);
                     navigate('/manager');
                   }}
+                  mode={editingRecipe ? 'edit' : 'create'}
                   recipes={recipes}
                 />
               </RoleBasedRoute>
-            }
-          />
+            } />
 
-          <Route
-            path="/analytics"
-            element={
+            <Route path="/manager/show-recipe" element={
               <RoleBasedRoute allowedRoles={['admin']}>
-                <Analytics recipes={recipes} />
+                <RecipeForm
+                  ingredients={ingredients}
+                  viewingRecipe={viewingRecipe}
+                  mode="view"
+                  recipes={recipes}
+                />
               </RoleBasedRoute>
-            }
-          />
+            } />
 
-          <Route
-            path="/data"
-            element={
-              <RoleBasedRoute allowedRoles={['admin']}>
-                <DataManager />
-              </RoleBasedRoute>
-            }
-          />
+            <Route
+              path="/ingredients"
+              element={
+                <RoleBasedRoute allowedRoles={['admin', 'store_manager']}>
+                  <IngredientsManager />
+                </RoleBasedRoute>
+              }
+            />
 
-          {/* POS Route - Server and Admin */}
-          <Route
-            path="/pos"
-            element={
-              <RoleBasedRoute allowedRoles={['admin', 'server']}>
-                <POSPage recipes={recipes} />
-              </RoleBasedRoute>
-            }
-          />
+            <Route
+              path="/stock"
+              element={
+                <RoleBasedRoute allowedRoles={['admin', 'store_manager']}>
+                  <StockRegister />
+                </RoleBasedRoute>
+              }
+            />
 
-          {/* KDS Route - Kitchen and Admin */}
-          <Route
-            path="/kds"
-            element={
-              <RoleBasedRoute allowedRoles={['admin', 'kitchen']}>
-                <KDSPage />
-              </RoleBasedRoute>
-            }
-          />
+            <Route
+              path="/create"
+              element={
+                <RoleBasedRoute allowedRoles={['admin']}>
+                  <RecipeForm
+                    ingredients={ingredients}
+                    mode="create"
+                    onSubmit={handleRecipeSubmit}
+                    onCancel={() => {
+                      setEditingRecipe(null);
+                      navigate('/manager');
+                    }}
+                    recipes={recipes}
+                  />
+                </RoleBasedRoute>
+              }
+            />
+
+            <Route
+              path="/analytics"
+              element={
+                <RoleBasedRoute allowedRoles={['admin']}>
+                  <Analytics recipes={recipes} />
+                </RoleBasedRoute>
+              }
+            />
+
+            <Route
+              path="/data"
+              element={
+                <RoleBasedRoute allowedRoles={['admin']}>
+                  <DataManager />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* POS Route - Server and Admin */}
+            <Route
+              path="/pos"
+              element={
+                <RoleBasedRoute allowedRoles={['admin', 'server']}>
+                  <POSPage recipes={recipes} />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* KDS Route - Kitchen and Admin */}
+            <Route
+              path="/kds"
+              element={
+                <RoleBasedRoute allowedRoles={['admin', 'kitchen']}>
+                  <KDSPage />
+                </RoleBasedRoute>
+              }
+            />
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
@@ -527,7 +527,7 @@ function App() {
       </main>
       <footer className="app-footer">
         <div className="footer-content">
-          <p className="footer-text">&copy; 2024 Kavas Conscious Living LLP. All rights reserved.</p>
+          <p className="footer-text">&copy; 2026 Kavas Conscious Living LLP. All rights reserved.</p>
         </div>
       </footer>
     </div>
