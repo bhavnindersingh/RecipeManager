@@ -62,7 +62,7 @@ function App() {
   // Sidebar group state (persisted in localStorage)
   const [openGroups, setOpenGroups] = useState(() => {
     const saved = localStorage.getItem('sidebarGroups');
-    return saved ? JSON.parse(saved) : { store: true, chef: true, sales: true, operations: true, accounts: true, analytics: true };
+    return saved ? JSON.parse(saved) : { store: false, chef: false, sales: false, operations: false, accounts: false, analytics: false };
   });
 
   // Save openGroups to localStorage whenever it changes
