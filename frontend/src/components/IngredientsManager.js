@@ -140,7 +140,9 @@ const IngredientsManager = () => {
       Unit: ingredient.unit,
       'Cost (₹)': ingredient.cost,
       'Min Stock': ingredient.minimum_stock || 10,
-      Category: ingredient.category
+      Category: ingredient.category,
+      Vendor: ingredient.vendor_name || '',
+      Phone: ingredient.vendor_phone || ''
     }));
 
     // Create workbook and worksheet
@@ -153,7 +155,9 @@ const IngredientsManager = () => {
       { wch: 10 }, // Unit
       { wch: 12 }, // Cost
       { wch: 12 }, // Min Stock
-      { wch: 20 }  // Category
+      { wch: 20 }, // Category
+      { wch: 25 }, // Vendor
+      { wch: 15 }  // Phone
     ];
     ws['!cols'] = colWidths;
 
@@ -189,7 +193,9 @@ const IngredientsManager = () => {
             unit: row.Unit || row.unit,
             cost: Number(row['Cost (₹)'] || row.cost || 0),
             minimum_stock: Number(row['Min Stock'] || row.minimum_stock || 10),
-            category: row.Category || row.category || 'Vegetables & Fruits'
+            category: row.Category || row.category || 'Vegetables & Fruits',
+            vendor_name: row.Vendor || row.vendor_name || null,
+            vendor_phone: row.Phone || row.vendor_phone || null
           };
 
           // Validate required fields
@@ -289,7 +295,8 @@ const IngredientsManager = () => {
       const searchLower = searchTerm.toLowerCase();
       return (
         ingredient.name.toLowerCase().includes(searchLower) ||
-        ingredient.category.toLowerCase().includes(searchLower)
+        ingredient.category.toLowerCase().includes(searchLower) ||
+        (ingredient.vendor_name && ingredient.vendor_name.toLowerCase().includes(searchLower))
       );
     });
 
@@ -426,7 +433,7 @@ const IngredientsManager = () => {
                 className="form-input"
                 value={newIngredient.vendor_name}
                 onChange={handleInputChange}
-                placeholder="Vendor or supplier name (optional)"
+                placeholder="(optional)"
               />
             </div>
             <div className="form-group">
@@ -437,7 +444,7 @@ const IngredientsManager = () => {
                 className="form-input"
                 value={newIngredient.vendor_phone}
                 onChange={handleInputChange}
-                placeholder="Vendor contact number (optional)"
+                placeholder="(optional)"
                 pattern="[0-9]{10,15}"
               />
             </div>
@@ -477,6 +484,7 @@ const IngredientsManager = () => {
                 <th>Cost (₹)</th>
                 <th>Min Stock</th>
                 <th>Category</th>
+                <th>Vendor</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -528,6 +536,38 @@ const IngredientsManager = () => {
                       ingredient.category
                     )}
                   </td>
+                  <td className="vendor-info">
+                    {editingId === ingredient.id ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <input
+                          type="text"
+                          value={editingValues.vendor_name}
+                          onChange={(e) => setEditingValues(prev => ({ ...prev, vendor_name: e.target.value }))}
+                          className="edit-input"
+                          placeholder="Vendor name"
+                        />
+                        <input
+                          type="tel"
+                          value={editingValues.vendor_phone}
+                          onChange={(e) => setEditingValues(prev => ({ ...prev, vendor_phone: e.target.value }))}
+                          className="edit-input"
+                          placeholder="Phone number"
+                          pattern="[0-9]{10,15}"
+                        />
+                      </div>
+                    ) : (
+                      ingredient.vendor_name || ingredient.vendor_phone ? (
+                        <div>
+                          <div>{ingredient.vendor_name || '-'}</div>
+                          {ingredient.vendor_phone && (
+                            <div className="vendor-phone">{ingredient.vendor_phone}</div>
+                          )}
+                        </div>
+                      ) : (
+                        '-'
+                      )
+                    )}
+                  </td>
                   <td>
                     <div className="action-buttons">
                       {editingId === ingredient.id ? (
@@ -571,7 +611,7 @@ const IngredientsManager = () => {
               ))}
               {filteredIngredients.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="empty-message">
+                  <td colSpan="7" className="empty-message">
                     {ingredients.length === 0 ? 'No ingredients added yet' : 'No matching ingredients found'}
                   </td>
                 </tr>

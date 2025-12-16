@@ -306,6 +306,16 @@
   color: var(--primary);
 }
 
+.vendor-info {
+  line-height: 1.4;
+}
+
+.vendor-phone {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 0.25rem;
+}
+
 .ingredients-table td:last-child {
   text-align: center;
 }

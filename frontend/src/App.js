@@ -62,7 +62,7 @@ function App() {
   // Sidebar group state (persisted in localStorage)
   const [openGroups, setOpenGroups] = useState(() => {
     const saved = localStorage.getItem('sidebarGroups');
-    return saved ? JSON.parse(saved) : { store: true, chef: true, sales: true };
+    return saved ? JSON.parse(saved) : { store: true, chef: true, sales: true, operations: true, accounts: true, analytics: true };
   });
 
   // Save openGroups to localStorage whenever it changes
@@ -289,6 +289,17 @@ function App() {
                         Dashboard
                       </NavLink>
 
+                      <SidebarGroup title="Sales" icon="💰" groupKey="sales">
+                        <NavLink to="/data" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">📊</span>
+                          Order Data
+                        </NavLink>
+                        <NavLink to="/analytics" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">📈</span>
+                          Sales Analysis
+                        </NavLink>
+                      </SidebarGroup>
+
                       <SidebarGroup title="Store" icon="🏪" groupKey="store">
                         <NavLink to="/ingredients" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                           <span className="sidebar-icon">🥕</span>
@@ -311,25 +322,39 @@ function App() {
                         </NavLink>
                       </SidebarGroup>
 
-                      <SidebarGroup title="Sales" icon="💰" groupKey="sales">
-                        <NavLink to="/data" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                          <span className="sidebar-icon">📊</span>
-                          Order Data
+                      <SidebarGroup title="Operations" icon="⚙️" groupKey="operations">
+                        <NavLink to="/pos" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">🛒</span>
+                          POS
                         </NavLink>
-                        <NavLink to="/analytics" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <NavLink to="/kds" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">👨‍🍳</span>
+                          Kitchen
+                        </NavLink>
+                      </SidebarGroup>
+
+                      <SidebarGroup title="Accounts" icon="💳" groupKey="accounts">
+                        <NavLink to="#" className="sidebar-link">
+                          <span className="sidebar-icon">📋</span>
+                          Coming Soon
+                        </NavLink>
+                      </SidebarGroup>
+
+                      <SidebarGroup title="Analytics" icon="📊" groupKey="analytics">
+                        <NavLink to="#" className="sidebar-link">
                           <span className="sidebar-icon">📈</span>
-                          Sales Analysis
+                          Coming Soon
                         </NavLink>
                       </SidebarGroup>
                     </>
                   )}
-                  {(currentUser.role === 'admin' || currentUser.role === 'server') && (
+                  {currentUser.role === 'server' && (
                     <NavLink to="/pos" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                       <span className="sidebar-icon">🛒</span>
                       POS
                     </NavLink>
                   )}
-                  {(currentUser.role === 'admin' || currentUser.role === 'kitchen') && (
+                  {currentUser.role === 'kitchen' && (
                     <NavLink to="/kds" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                       <span className="sidebar-icon">👨‍🍳</span>
                       Kitchen
