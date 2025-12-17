@@ -170,22 +170,55 @@ export const orderService = {
   },
 
   /**
-   * Update order item status
+   * Update order item status for individual item serving workflow
    * @param {number} itemId - Order item ID
-   * @param {string} status - New item status
+   * @param {string} status - New item status ('pending', 'preparing', 'ready', 'served')
    * @returns {Promise<Object>} Updated item
    */
   async updateItemStatus(itemId, status) {
     try {
-      const { data, error } = await supabase
+      // Update the item status
+      const { data: updatedItem, error } = await supabase
         .from('order_items')
         .update({ item_status: status })
         .eq('id', itemId)
-        .select()
+        .select('order_id')
         .single();
 
       if (error) throw error;
-      return data;
+
+      // Check all items in the order
+      const { data: allItems, error: fetchError } = await supabase
+        .from('order_items')
+        .select('item_status')
+        .eq('order_id', updatedItem.order_id);
+
+      if (fetchError) throw fetchError;
+
+      // Get current order status
+      const { data: currentOrder } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('id', updatedItem.order_id)
+        .single();
+
+      // If at least one item is preparing/ready/served, update order to 'cooking' (if currently pending)
+      if (currentOrder && currentOrder.status === 'pending') {
+        const hasActiveItems = allItems.some(item =>
+          item.item_status === 'preparing' || item.item_status === 'ready' || item.item_status === 'served'
+        );
+        if (hasActiveItems) {
+          await this.updateOrderStatus(updatedItem.order_id, 'cooking');
+        }
+      }
+
+      // If ALL items are served, update order to 'served'
+      const allServed = allItems.every(item => item.item_status === 'served');
+      if (allServed) {
+        await this.updateOrderStatus(updatedItem.order_id, 'served');
+      }
+
+      return updatedItem;
     } catch (error) {
       console.error('Error updating item status:', error);
       throw error;
@@ -199,6 +232,41 @@ export const orderService = {
    */
   async cancelOrder(id) {
     return this.updateOrderStatus(id, 'cancelled');
+  },
+
+  /**
+   * Get all ready items for server dashboard
+   * @returns {Promise<Array>} Items with status = 'ready'
+   */
+  async getReadyItems() {
+    try {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select(`
+          id,
+          quantity,
+          notes,
+          item_status,
+          order_id,
+          recipe:recipes(id, name, category),
+          order:orders(
+            id,
+            order_number,
+            table_number,
+            order_type,
+            customer_name,
+            created_at
+          )
+        `)
+        .eq('item_status', 'ready')
+        .order('created_at', { ascending: true }); // Oldest first
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching ready items:', error);
+      throw error;
+    }
   },
 
   /**
@@ -221,7 +289,7 @@ export const orderService = {
             recipe:recipes(id, name, category)
           )
         `)
-        .in('status', ['pending', 'cooking', 'ready'])
+        .in('status', ['pending', 'cooking'])
         .order('created_at', { ascending: true }); // Oldest first
 
       if (error) throw error;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { tableService } from '../../services/tableService';
+import { supabase } from '../../config/supabase';
 import TableCard from './TableCard';
 
 const TableLayout = ({ onTableSelect }) => {
@@ -11,13 +12,46 @@ const TableLayout = ({ onTableSelect }) => {
     fetchTables();
 
     // Subscribe to table changes
-    const channel = tableService.subscribeToTables((payload) => {
+    const tablesChannel = tableService.subscribeToTables((payload) => {
       console.log('Table update:', payload);
       fetchTables();
     });
 
+    // Subscribe to order changes (affects table status and current_order)
+    const ordersChannel = supabase
+      .channel('table-orders-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'orders'
+      }, (payload) => {
+        console.log('Order update affecting tables:', payload);
+        // Only refetch if order has table_id or status changed
+        if (payload.new?.table_id || payload.old?.table_id ||
+            payload.new?.status !== payload.old?.status) {
+          fetchTables();
+        }
+      })
+      .subscribe();
+
+    // Subscribe to order_items changes (affects order totals displayed on tables)
+    const orderItemsChannel = supabase
+      .channel('table-order-items-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'order_items'
+      }, (payload) => {
+        console.log('Order item update affecting tables:', payload);
+        // Refetch to update order totals
+        fetchTables();
+      })
+      .subscribe();
+
     return () => {
-      tableService.unsubscribe(channel);
+      tableService.unsubscribe(tablesChannel);
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(orderItemsChannel);
     };
   }, []);
 

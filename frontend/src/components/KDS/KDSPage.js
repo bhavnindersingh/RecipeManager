@@ -35,7 +35,8 @@ const KDSPage = () => {
 
   // Setup realtime subscription
   useEffect(() => {
-    const channel = orderService.subscribeToOrders((payload) => {
+    // Subscribe to order changes
+    const ordersChannel = orderService.subscribeToOrders((payload) => {
       console.log('Order update:', payload);
 
       // Play sound for new orders
@@ -47,10 +48,21 @@ const KDSPage = () => {
       fetchKitchenOrders();
     });
 
+    // Subscribe to order_items changes (individual item status updates)
+    const orderItemsChannel = orderService.subscribeToOrderItems((payload) => {
+      console.log('Order item update:', payload);
+
+      // Refresh orders list when items are added or status changes
+      fetchKitchenOrders();
+    });
+
     // Cleanup on unmount
     return () => {
-      if (channel) {
-        orderService.unsubscribe(channel);
+      if (ordersChannel) {
+        orderService.unsubscribe(ordersChannel);
+      }
+      if (orderItemsChannel) {
+        orderService.unsubscribe(orderItemsChannel);
       }
     };
   }, [fetchKitchenOrders]);
@@ -85,6 +97,28 @@ const KDSPage = () => {
     }
   };
 
+  // Handle individual item status change
+  const handleItemStatusChange = async (itemId, currentStatus) => {
+    try {
+      // Cycle through statuses: pending → preparing → ready (stop at ready)
+      let newStatus;
+      if (currentStatus === 'pending') {
+        newStatus = 'preparing';
+      } else if (currentStatus === 'preparing') {
+        newStatus = 'ready';
+      } else {
+        // If already ready or served, don't change from KDS
+        console.log('Item is ready/served - must be marked as served from Server Dashboard');
+        return;
+      }
+
+      await orderService.updateItemStatus(itemId, newStatus);
+      // Realtime will trigger refresh
+    } catch (error) {
+      console.error('Error updating item status:', error);
+    }
+  };
+
   // Calculate elapsed time
   const calculateElapsedTime = (createdAt) => {
     const now = new Date();
@@ -108,9 +142,6 @@ const KDSPage = () => {
           <span className="stat-badge cooking">
             {orders.filter(o => o.status === 'cooking').length} Cooking
           </span>
-          <span className="stat-badge ready">
-            {orders.filter(o => o.status === 'ready').length} Ready
-          </span>
         </div>
       </div>
 
@@ -133,12 +164,6 @@ const KDSPage = () => {
         >
           Cooking
         </button>
-        <button
-          className={`kds-filter-btn ${filter === 'ready' ? 'active' : ''}`}
-          onClick={() => setFilter('ready')}
-        >
-          Ready
-        </button>
       </div>
 
       {loading ? (
@@ -156,6 +181,7 @@ const KDSPage = () => {
               elapsedTime={calculateElapsedTime(order.created_at)}
               onStartCooking={handleStartCooking}
               onMarkReady={handleMarkReady}
+              onItemStatusChange={handleItemStatusChange}
             />
           ))}
         </div>

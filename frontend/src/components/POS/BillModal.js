@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { paymentService } from '../../services/paymentService';
 import { orderService } from '../../services/orderService';
+import { supabase } from '../../config/supabase';
 import SplitPaymentModal from './SplitPaymentModal';
 
 const BillModal = ({ order, onClose, onPaymentComplete }) => {
@@ -11,10 +12,78 @@ const BillModal = ({ order, onClose, onPaymentComplete }) => {
   const [loading, setLoading] = useState(false);
   const [showSplitPayment, setShowSplitPayment] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [currentOrder, setCurrentOrder] = useState(order);
 
-  const totalAmount = parseFloat(order.total_amount);
-  const paidAmount = parseFloat(order.paid_amount || 0);
+  const totalAmount = parseFloat(currentOrder.total_amount);
+  const paidAmount = parseFloat(currentOrder.paid_amount || 0);
   const remainingAmount = totalAmount - paidAmount;
+
+  // Subscribe to realtime payment updates
+  useEffect(() => {
+    const orderId = order.id;
+
+    // Subscribe to order changes (payment_status, paid_amount updates)
+    const orderChannel = supabase
+      .channel(`bill-order-${orderId}-realtime`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'orders',
+        filter: `id=eq.${orderId}`
+      }, async (payload) => {
+        console.log('Order payment updated:', payload);
+
+        // Refresh order with payment details
+        try {
+          const updatedOrder = await orderService.getOrderWithPayments(orderId);
+          setCurrentOrder(updatedOrder);
+
+          // Show notification if payment status changed
+          if (payload.new.payment_status !== payload.old.payment_status) {
+            showMessage(`Payment status: ${payload.new.payment_status}`, 'info');
+          }
+
+          // Auto-close if fully paid from another terminal
+          if (payload.new.payment_status === 'paid' && payload.old.payment_status !== 'paid') {
+            showMessage('Order fully paid!', 'success');
+            setTimeout(() => {
+              if (onPaymentComplete) onPaymentComplete();
+              onClose();
+            }, 2000);
+          }
+        } catch (error) {
+          console.error('Error fetching updated order:', error);
+        }
+      })
+      .subscribe();
+
+    // Subscribe to payments table (new payments added)
+    const paymentsChannel = supabase
+      .channel(`bill-payments-${orderId}-realtime`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'payments',
+        filter: `order_id=eq.${orderId}`
+      }, async (payload) => {
+        console.log('New payment added:', payload);
+
+        // Refresh order with updated payments
+        try {
+          const updatedOrder = await orderService.getOrderWithPayments(orderId);
+          setCurrentOrder(updatedOrder);
+          showMessage('Payment received', 'success');
+        } catch (error) {
+          console.error('Error fetching updated order:', error);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(orderChannel);
+      supabase.removeChannel(paymentsChannel);
+    };
+  }, [order.id, onPaymentComplete, onClose]);
 
   const calculateChange = () => {
     if (paymentMethod === 'cash' && cashReceived) {
@@ -101,7 +170,7 @@ const BillModal = ({ order, onClose, onPaymentComplete }) => {
         )}
 
         <div className="modal-header">
-          <h2>Bill - Order #{order.order_number}</h2>
+          <h2>Bill - Order #{currentOrder.order_number}</h2>
           <button className="btn-close-modal" onClick={onClose}>×</button>
         </div>
 
@@ -110,7 +179,7 @@ const BillModal = ({ order, onClose, onPaymentComplete }) => {
           <div className="bill-items">
             <h3>Order Items</h3>
             <div className="bill-items-list">
-              {order.order_items.map(item => (
+              {currentOrder.order_items.map(item => (
                 <div key={item.id} className="bill-item-row">
                   <div className="item-details">
                     <span className="item-name">{item.recipe.name}</span>

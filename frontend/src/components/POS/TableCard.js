@@ -38,7 +38,7 @@ const TableCard = ({ table, onClick }) => {
   const getStatusText = () => {
     switch (table.status) {
       case 'available':
-        return 'Available';
+        return 'Free'; // Shorter text
       case 'occupied':
         return 'Occupied';
       case 'billing':
@@ -46,7 +46,7 @@ const TableCard = ({ table, onClick }) => {
       case 'billed':
         return 'Billed';
       case 'reserved':
-        return 'Reserved';
+        return 'Rsrvd';
       default:
         return table.status;
     }
@@ -70,38 +70,33 @@ const TableCard = ({ table, onClick }) => {
       onClick={() => onClick(table)}
     >
       <div className="table-card-header">
-        <div className="table-number">Table {table.table_number}</div>
-        <div className="table-status-icon">{getStatusIcon()}</div>
+        <span className="table-number">{table.table_number}</span>
+        <span className="table-capacity">
+          <span className="capacity-icon">👥</span>{table.capacity}
+        </span>
       </div>
 
       <div className="table-card-body">
-        <div className="table-capacity">
-          <span className="capacity-icon">👥</span>
-          <span>{table.capacity} seats</span>
-        </div>
-
-        {table.current_order && (
+        {table.current_order ? (
           <>
-            <div className="table-order-info">
-              <div className="order-amount">
-                ₹{parseFloat(table.current_order.total_amount).toFixed(2)}
-              </div>
+            <div className="table-order-primary">
+              <span className="order-amount">₹{parseFloat(table.current_order.total_amount).toFixed(0)}</span>
+            </div>
+            <div className="table-order-secondary">
+              <span className="table-time">🕒 {formatTime(table.current_order.created_at)}</span>
               {table.current_order.guest_count && (
-                <div className="guest-count">
-                  {table.current_order.guest_count} guests
-                </div>
+                <span className="guest-count">👤 {table.current_order.guest_count}</span>
               )}
             </div>
-            <div className="table-time">
-              {formatTime(table.current_order.created_at)}
-            </div>
           </>
+        ) : (
+          <div className="table-status-indicator">
+            {getStatusIcon()} <span className="status-text">{getStatusText()}</span>
+          </div>
         )}
       </div>
 
-      <div className="table-card-footer">
-        <span className="table-status-label">{getStatusText()}</span>
-      </div>
+      {/* Removed separate footer, status is implicit or shown in body */}
     </div>
   );
 };

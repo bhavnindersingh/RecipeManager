@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { orderService } from '../../services/orderService';
+import { supabase } from '../../config/supabase';
 import RecipeGrid from './RecipeGrid';
 import CartPanel from './CartPanel';
 
@@ -15,6 +16,69 @@ const TableOrderModal = ({ table, recipes, onClose, onOrderComplete, onGenerateB
 
   // Get unique categories
   const categories = ['all', ...new Set(recipes.map(r => r.category))];
+
+  // Subscribe to realtime updates for this table's order
+  useEffect(() => {
+    if (!table.current_order?.id) return;
+
+    const orderId = table.current_order.id;
+
+    // Subscribe to order changes
+    const orderChannel = supabase
+      .channel(`order-${orderId}-realtime`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'orders',
+        filter: `id=eq.${orderId}`
+      }, async (payload) => {
+        console.log('Order updated in modal:', payload);
+
+        // Refresh order data
+        try {
+          const updatedOrder = await orderService.getOrderById(orderId);
+          setCurrentOrder(updatedOrder);
+
+          // Show notification if status changed
+          if (payload.new.status !== payload.old.status) {
+            showMessage(`Order status: ${payload.new.status}`, 'info');
+          }
+        } catch (error) {
+          console.error('Error fetching updated order:', error);
+        }
+      })
+      .subscribe();
+
+    // Subscribe to order_items changes (new items added from another terminal)
+    const orderItemsChannel = supabase
+      .channel(`order-items-${orderId}-realtime`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'order_items',
+        filter: `order_id=eq.${orderId}`
+      }, async (payload) => {
+        console.log('Order items updated in modal:', payload);
+
+        // Refresh order data to get updated items and total
+        try {
+          const updatedOrder = await orderService.getOrderById(orderId);
+          setCurrentOrder(updatedOrder);
+
+          if (payload.eventType === 'INSERT') {
+            showMessage('New items added to order', 'info');
+          }
+        } catch (error) {
+          console.error('Error fetching updated order:', error);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(orderChannel);
+      supabase.removeChannel(orderItemsChannel);
+    };
+  }, [table.current_order?.id]);
 
   // Filter recipes - only show production recipes in POS
   const filteredRecipes = recipes.filter(recipe => {

@@ -18,6 +18,7 @@ const Analytics = lazy(() => import('./components/Analytics'));
 const DataManager = lazy(() => import('./components/DataManager'));
 const POSPage = lazy(() => import('./components/POS/POSPage'));
 const KDSPage = lazy(() => import('./components/KDS/KDSPage'));
+const ServerDashboard = lazy(() => import('./components/Server/ServerDashboard'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -329,7 +330,11 @@ function App() {
                         </NavLink>
                         <NavLink to="/kds" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                           <span className="sidebar-icon">👨‍🍳</span>
-                          Kitchen
+                          KDS
+                        </NavLink>
+                        <NavLink to="/server" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                          <span className="sidebar-icon">🎯</span>
+                          Server
                         </NavLink>
                       </SidebarGroup>
 
@@ -349,15 +354,21 @@ function App() {
                     </>
                   )}
                   {currentUser.role === 'server' && (
-                    <NavLink to="/pos" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-                      <span className="sidebar-icon">🛒</span>
-                      POS
-                    </NavLink>
+                    <>
+                      <NavLink to="/pos" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">🛒</span>
+                        POS
+                      </NavLink>
+                      <NavLink to="/server" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                        <span className="sidebar-icon">🎯</span>
+                        Server
+                      </NavLink>
+                    </>
                   )}
                   {currentUser.role === 'kitchen' && (
                     <NavLink to="/kds" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                       <span className="sidebar-icon">👨‍🍳</span>
-                      Kitchen
+                      KDS
                     </NavLink>
                   )}
                   {currentUser.role === 'store_manager' && (
@@ -517,6 +528,16 @@ function App() {
               element={
                 <RoleBasedRoute allowedRoles={['admin', 'kitchen']}>
                   <KDSPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* Server Dashboard Route - Server and Admin */}
+            <Route
+              path="/server"
+              element={
+                <RoleBasedRoute allowedRoles={['admin', 'server']}>
+                  <ServerDashboard />
                 </RoleBasedRoute>
               }
             />

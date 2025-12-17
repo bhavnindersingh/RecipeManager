@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderService } from '../services/orderService';
 import '../styles/Dashboard.css';
@@ -14,35 +14,40 @@ const Dashboard = ({ recipes }) => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Fetch today's orders
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const allOrders = await orderService.getOrders();
+      // Fetch all orders (we need history for recent orders too)
+      const allOrders = await orderService.getAllOrders();
 
       // Filter today's orders
+      const todayString = new Date().toDateString();
       const todayOrders = allOrders.filter(order => {
+        if (!order.created_at) return false;
         const orderDate = new Date(order.created_at);
-        orderDate.setHours(0, 0, 0, 0);
-        return orderDate.getTime() === today.getTime();
+        return orderDate.toDateString() === todayString;
+      });
+
+      console.log('Dashboard Data Check:', {
+        totalOrders: allOrders.length,
+        todayOrdersCount: todayOrders.length,
+        todayDate: todayString,
+        sampleOrderDate: allOrders[0]?.created_at
       });
 
       // Calculate stats
-      const todayRevenue = todayOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+      // Revenue: Sum of total_amount for non-cancelled orders today
+      const todayRevenue = todayOrders
+        .filter(order => order.status !== 'cancelled')
+        .reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+
+      // Active: pending or cooking
       const activeOrders = allOrders.filter(order =>
         order.status === 'pending' || order.status === 'cooking'
       ).length;
+
+      // Pending: just pending
       const pendingOrders = allOrders.filter(order => order.status === 'pending').length;
 
       setStats({
@@ -53,7 +58,7 @@ const Dashboard = ({ recipes }) => {
       });
 
       // Get recent orders (last 5)
-      const recent = allOrders
+      const recent = [...allOrders]
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(0, 5);
 
@@ -63,7 +68,23 @@ const Dashboard = ({ recipes }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+
+    // Subscribe to realtime updates
+    const channel = orderService.subscribeToOrders((payload) => {
+      console.log('Dashboard update:', payload);
+      fetchDashboardData();
+    });
+
+    return () => {
+      if (channel) {
+        orderService.unsubscribe(channel);
+      }
+    };
+  }, [fetchDashboardData]);
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -193,7 +214,7 @@ const Dashboard = ({ recipes }) => {
               <div key={order.id} className="order-card">
                 <div className="order-header">
                   <div className="order-info">
-                    <h4 className="order-id">Order #{order.id.slice(0, 8)}</h4>
+                    <h4 className="order-id">Order #{order.order_number}</h4>
                     <span className="order-time">{formatTime(order.created_at)}</span>
                   </div>
                   <span className={`order-status ${getStatusClass(order.status)}`}>

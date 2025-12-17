@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { orderService } from '../../services/orderService';
+import { supabase } from '../../config/supabase';
 import RecipeGrid from './RecipeGrid';
 import CartPanel from './CartPanel';
 
@@ -14,6 +15,34 @@ const DeliveryOrderForm = ({ platform, recipes, onOrderComplete }) => {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [recentOrderId, setRecentOrderId] = useState(null);
+  const [recentOrderStatus, setRecentOrderStatus] = useState(null);
+
+  // Subscribe to realtime updates for recently created order
+  useEffect(() => {
+    if (!recentOrderId) return;
+
+    const orderChannel = supabase
+      .channel(`delivery-order-${recentOrderId}-realtime`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'orders',
+        filter: `id=eq.${recentOrderId}`
+      }, (payload) => {
+        console.log('Delivery order status updated:', payload);
+
+        if (payload.new.status !== payload.old.status) {
+          setRecentOrderStatus(payload.new.status);
+          showMessage(`Order ${payload.new.order_number}: ${payload.new.status}`, 'info');
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(orderChannel);
+    };
+  }, [recentOrderId]);
 
   // Get unique categories
   const categories = ['all', ...new Set(recipes.map(r => r.category))];
@@ -132,6 +161,10 @@ const DeliveryOrderForm = ({ platform, recipes, onOrderComplete }) => {
 
       const order = await orderService.createOrder(orderData);
       showMessage(`Order ${order.order_number} created successfully!`, 'success');
+
+      // Track this order for realtime status updates
+      setRecentOrderId(order.id);
+      setRecentOrderStatus(order.status);
 
       // Clear form
       setCart([]);
