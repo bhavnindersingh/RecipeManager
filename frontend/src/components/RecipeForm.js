@@ -181,6 +181,19 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
     // Recipe data is ready in view mode
   }, [recipe, mode]);
 
+  // SKU preview state
+  const [skuPreview, setSkuPreview] = useState('');
+
+  // Sales data from POS
+  const [salesData, setSalesData] = useState({
+    total_units_sold: 0,
+    total_revenue: 0,
+    average_sale_price: 0,
+    order_count: 0,
+    last_sold_at: null
+  });
+  const [loadingSalesData, setLoadingSalesData] = useState(false);
+
   const [showImageModal, setShowImageModal] = useState(false);
   const [showDeliveryImageModal, setShowDeliveryImageModal] = useState(false);
   const [prevMode, setPrevMode] = useState(mode);
@@ -235,6 +248,50 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
       });
     }
   }, [ingredientsLength]);
+
+  // Fetch SKU preview when category changes (for new recipes)
+  useEffect(() => {
+    const fetchSkuPreview = async () => {
+      if (mode === 'create' && recipe.category) {
+        try {
+          const nextSku = await recipeService.previewNextSku(recipe.category);
+          setSkuPreview(nextSku);
+        } catch (error) {
+          console.error('Error fetching SKU preview:', error);
+          setSkuPreview('FMB 001'); // Fallback
+        }
+      } else if (mode !== 'create' && recipe.sku) {
+        // For edit/view mode, show existing SKU
+        setSkuPreview(recipe.sku);
+      }
+    };
+
+    fetchSkuPreview();
+  }, [recipe.category, mode, recipe.sku]);
+
+  // Fetch sales data from POS when viewing/editing existing recipe
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      if (recipe.id && mode !== 'create') {
+        setLoadingSalesData(true);
+        try {
+          const data = await recipeService.getRecipeSalesData(recipe.id);
+          setSalesData(data);
+          // Update recipe sales field with actual POS data
+          setRecipe(prev => ({
+            ...prev,
+            sales: data.total_units_sold || 0
+          }));
+        } catch (error) {
+          console.error('Error fetching sales data:', error);
+        } finally {
+          setLoadingSalesData(false);
+        }
+      }
+    };
+
+    fetchSalesData();
+  }, [recipe.id, mode]);
 
   // Update preview when editing existing recipe
   useEffect(() => {
@@ -629,6 +686,30 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
             </select>
           </div>
 
+          {/* SKU Display Field */}
+          <div className="form-group sku-group">
+            <label htmlFor="sku">SKU (Stock Keeping Unit)</label>
+            <div className="sku-display">
+              <input
+                type="text"
+                id="sku"
+                name="sku"
+                value={skuPreview}
+                className="form-control sku-input"
+                readOnly
+                disabled
+              />
+              <span className="sku-badge">
+                {mode === 'create' ? '🆕 Auto-generated' : '✅ Assigned'}
+              </span>
+            </div>
+            <div className="field-hint">
+              {mode === 'create'
+                ? 'This SKU will be automatically assigned when you create the recipe'
+                : 'This SKU was assigned when the recipe was created'}
+            </div>
+          </div>
+
           <div className="form-group production-recipe-group">
             <div className="checkbox-item production-checkbox">
               <input
@@ -865,20 +946,76 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="sales">Sales (units)</label>
-            <input
-              type="number"
-              id="sales"
-              name="sales"
-              className="form-control"
-              value={recipe.sales}
-              onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-              min="0"
-              max="999999"
-              disabled={isViewMode}
-            />
-          </div>
+          {/* Sales Data from POS */}
+          {mode !== 'create' && recipe.id ? (
+            <div className="sales-analytics-card">
+              <div className="sales-card-header">
+                <h3>📊 Sales Analytics (from POS)</h3>
+                <button
+                  type="button"
+                  className="refresh-sales-btn"
+                  onClick={async () => {
+                    setLoadingSalesData(true);
+                    try {
+                      const data = await recipeService.getRecipeSalesData(recipe.id);
+                      setSalesData(data);
+                      setRecipe(prev => ({ ...prev, sales: data.total_units_sold || 0 }));
+                      setError({ message: 'Sales data refreshed successfully', type: 'success' });
+                    } catch (error) {
+                      setError({ message: 'Failed to refresh sales data', type: 'error' });
+                    } finally {
+                      setLoadingSalesData(false);
+                    }
+                  }}
+                  disabled={loadingSalesData}
+                >
+                  {loadingSalesData ? '⏳' : '🔄'} Refresh
+                </button>
+              </div>
+              <div className="sales-stats-grid">
+                <div className="sales-stat">
+                  <div className="stat-label">Total Units Sold</div>
+                  <div className="stat-value">{salesData.total_units_sold || 0}</div>
+                </div>
+                <div className="sales-stat">
+                  <div className="stat-label">Total Revenue</div>
+                  <div className="stat-value">₹{Number(salesData.total_revenue || 0).toFixed(2)}</div>
+                </div>
+                <div className="sales-stat">
+                  <div className="stat-label">Avg Sale Price</div>
+                  <div className="stat-value">₹{Number(salesData.average_sale_price || 0).toFixed(2)}</div>
+                </div>
+                <div className="sales-stat">
+                  <div className="stat-label">Orders Count</div>
+                  <div className="stat-value">{salesData.order_count || 0}</div>
+                </div>
+              </div>
+              {salesData.last_sold_at && (
+                <div className="last-sold-info">
+                  Last sold: {new Date(salesData.last_sold_at).toLocaleString()}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="form-group">
+              <label className="form-label" htmlFor="sales">Sales (units)</label>
+              <input
+                type="number"
+                id="sales"
+                name="sales"
+                className="form-control"
+                value={recipe.sales}
+                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+                min="0"
+                max="999999"
+                disabled={isViewMode}
+                placeholder="Enter expected sales (POS data will replace this after first sale)"
+              />
+              <div className="field-hint">
+                Enter estimated sales for MRP calculations. This will be replaced with actual POS data once the recipe is created.
+              </div>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="overhead">Overhead % *</label>

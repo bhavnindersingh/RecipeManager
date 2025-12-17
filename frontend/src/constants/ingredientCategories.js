@@ -1,14 +1,17 @@
 export const INGREDIENT_CATEGORIES = [
-  'Vegetables & Fruits',
-  'Dry Staples',
-  'Dairy and Dairy Alternatives',
-  'Processed Ingredients',
-  'Bakery and Bread',
-  'Oils and Fats',
-  'Beverages and Additives',
-  'Frozen and Refrigerated Items',
-  'Specialty Ingredients',
-  'Packaging and Garnishes',
+  'Fresh Vegetables',
+  'Fresh Fruits',
+  'Specialty & Gourmet Pantry',
+  'Nuts, Seeds & Superfoods',
+  'Dry Groceries & Staples',
+  'Vegan Dairy & Alternatives',
+  'Standard Dairy',
+  'Spices & Seasonings',
+  'Sauces, Oils & Vinegars',
+  'Cafe Beverages',
+  'Frozen Foods',
+  'Packaging & Disposables',
+  'Housekeeping & Cleaning',
   'Miscellaneous'
 ];
 

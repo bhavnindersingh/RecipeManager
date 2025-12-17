@@ -190,6 +190,52 @@ export const recipeService = {
 
       if (error) console.error('Error deleting images:', error);
     }
+  },
+
+  /**
+   * Get actual sales data from POS for a recipe
+   * @param {number} recipeId - Recipe ID
+   * @returns {Promise<Object>} Sales data with units sold, revenue, avg price, etc.
+   */
+  async getRecipeSalesData(recipeId) {
+    try {
+      const { data, error } = await supabase.rpc('get_recipe_sales_data', {
+        target_recipe_id: recipeId
+      });
+
+      if (error) throw error;
+
+      // Return first result or default values
+      return data && data.length > 0 ? data[0] : {
+        total_units_sold: 0,
+        total_revenue: 0,
+        average_sale_price: 0,
+        order_count: 0,
+        last_sold_at: null
+      };
+    } catch (error) {
+      console.error('Error fetching recipe sales data:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Preview next SKU for a given category without incrementing
+   * @param {string} category - Recipe category
+   * @returns {Promise<string>} Next SKU that will be generated (e.g., "FMB 001")
+   */
+  async previewNextSku(category) {
+    try {
+      const { data, error } = await supabase.rpc('preview_next_sku', {
+        recipe_category: category || 'Uncategorized'
+      });
+
+      if (error) throw error;
+      return data || 'FMB 001';
+    } catch (error) {
+      console.error('Error previewing next SKU:', error);
+      return 'FMB 001'; // Fallback
+    }
   }
 };
 

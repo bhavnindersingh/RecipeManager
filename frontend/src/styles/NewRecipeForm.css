@@ -208,11 +208,18 @@
 }
 
 .add-ingredient-form {
-  background: var(--surface-glass);
-  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(249, 250, 251, 0.9));
+  padding: 1.75rem;
   border-radius: 20px;
-  border: 1px solid var(--border-light);
-  margin-bottom: 1.5rem;
+  border: 2px solid var(--border-light);
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.add-ingredient-form:hover {
+  box-shadow: 0 6px 16px rgba(148, 76, 104, 0.12);
+  border-color: var(--secondary);
 }
 
 .input-row {
@@ -225,12 +232,21 @@
   margin-bottom: 0;
 }
 
+/* Ingredient Select Dropdown - Fix Truncation */
+.ingredient-select {
+  min-width: 200px;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .add-ingredient-btn {
   background: var(--success);
   color: white;
   border: none;
   border-radius: 12px;
-  padding: 14px 24px;
+  padding: 14px 28px;
   height: 58px;
   /* Match input height approx */
   font-weight: 700;
@@ -242,6 +258,7 @@
   box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
   margin-top: 0;
   flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .add-ingredient-btn:hover {
@@ -255,6 +272,7 @@
   transform: none;
   box-shadow: none;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .ingredients-table-container {
@@ -262,7 +280,8 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--border-light);
+  margin-top: 1.5rem;
 }
 
 .ingredients-table {
@@ -271,20 +290,132 @@
 }
 
 .ingredients-table th {
-  background: var(--bg-lighter);
-  /* Light lavender blush */
-  padding: 1.2rem;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  padding: 1.2rem 1rem;
   text-align: left;
   font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--primary);
+  font-size: 0.8rem;
   text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 3px solid var(--primary);
+}
+
+/* Set explicit column widths */
+.ingredients-table th:nth-child(1) {
+  width: 40%;
+}
+
+.ingredients-table th:nth-child(2) {
+  width: 30%;
+}
+
+.ingredients-table th:nth-child(3) {
+  width: 20%;
+}
+
+.ingredients-table th:nth-child(4) {
+  width: 10%;
+  text-align: center;
 }
 
 .ingredients-table td {
-  padding: 1.2rem;
+  padding: 1.2rem 1rem;
   border-bottom: 1px solid #f1f5f9;
   font-size: 1.05rem;
+  vertical-align: middle;
+}
+
+/* Specific column styles */
+.ingredient-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ingredient-quantity {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ingredient-cost {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Remove Button Styling */
+.ingredients-table td:last-child {
+  text-align: center;
+  padding: 0.8rem;
+}
+
+.remove-ingredient-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 2px solid #dc2626;
+  background: white;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.remove-ingredient-btn:hover {
+  background: #dc2626;
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.remove-ingredient-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.remove-ingredient-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Ingredients Total Cost Card */
+.ingredients-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.15));
+  border-left: 6px solid #059669;
+  padding: 1.5rem 2rem;
+  border-radius: 14px;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+  transition: all 0.3s;
+}
+
+.ingredients-total:hover {
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.25);
+  transform: translateX(4px);
+}
+
+.total-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #047857;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.total-amount {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #059669;
+  text-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
 }
 
 /* Image Upload Styling */
@@ -371,6 +502,59 @@
   }
 }
 
+@media (max-width: 768px) {
+  /* Ingredients Section Mobile Adjustments */
+  .input-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .input-row .form-group {
+    width: 100%;
+  }
+
+  .add-ingredient-btn {
+    width: 100%;
+    justify-content: center;
+    height: 52px;
+  }
+
+  .ingredients-table th,
+  .ingredients-table td {
+    padding: 0.8rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .ingredients-table th {
+    font-size: 0.7rem;
+  }
+
+  .remove-ingredient-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .remove-ingredient-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .ingredients-total {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+  }
+
+  .total-label {
+    font-size: 0.95rem;
+  }
+
+  .total-amount {
+    font-size: 1.6rem;
+  }
+}
+
 @media (max-width: 600px) {
   .recipe-form-container {
     padding: 1rem 1rem 100px 1rem;
@@ -394,6 +578,40 @@
     padding: 14px 24px;
     font-size: 1rem;
     flex: 1;
+  }
+
+  /* Ingredients Mobile Optimization */
+  .add-ingredient-form {
+    padding: 1.25rem;
+  }
+
+  .ingredients-table-container {
+    border-radius: 14px;
+  }
+
+  /* Adjust column widths for mobile */
+  .ingredients-table th:nth-child(1),
+  .ingredients-table td:nth-child(1) {
+    width: 35%;
+  }
+
+  .ingredients-table th:nth-child(2),
+  .ingredients-table td:nth-child(2) {
+    width: 30%;
+  }
+
+  .ingredients-table th:nth-child(3),
+  .ingredients-table td:nth-child(3) {
+    width: 25%;
+  }
+
+  .ingredients-table th:nth-child(4),
+  .ingredients-table td:nth-child(4) {
+    width: 10%;
+  }
+
+  .ingredient-name {
+    font-size: 0.9rem;
   }
 }
 
@@ -424,4 +642,201 @@ input[type="checkbox"] {
   height: 24px;
   accent-color: var(--primary);
   cursor: pointer;
+}
+
+/* ========================================
+   SKU Display Styles
+   ======================================== */
+.sku-group {
+  background: linear-gradient(135deg, rgba(148, 76, 104, 0.05), rgba(184, 98, 125, 0.08));
+  border-left: 4px solid var(--primary);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.8rem;
+}
+
+.sku-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sku-input {
+  flex: 1;
+  font-weight: 700;
+  font-size: 1.2rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: white !important;
+  color: var(--primary) !important;
+  border: 2px solid var(--primary) !important;
+}
+
+.sku-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(148, 76, 104, 0.3);
+}
+
+.field-hint {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* ========================================
+   Sales Analytics Card Styles
+   ======================================== */
+.sales-analytics-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(249, 250, 251, 0.9));
+  border: 2px solid var(--border-light);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.sales-analytics-card:hover {
+  box-shadow: 0 12px 32px rgba(148, 76, 104, 0.15);
+  transform: translateY(-2px);
+}
+
+.sales-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(148, 76, 104, 0.1);
+}
+
+.sales-card-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.refresh-sales-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(148, 76, 104, 0.3);
+}
+
+.refresh-sales-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(148, 76, 104, 0.4);
+}
+
+.refresh-sales-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sales-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sales-stat {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  text-align: center;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.sales-stat:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(148, 76, 104, 0.15);
+  transform: translateY(-4px);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.8px;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1.2;
+}
+
+.last-sold-info {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Responsive adjustments for sales analytics */
+@media (max-width: 768px) {
+  .sales-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .sales-stat {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sales-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .refresh-sales-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

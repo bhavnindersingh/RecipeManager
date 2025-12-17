@@ -140,16 +140,20 @@ const StockRegister = () => {
   // Get category emoji
   const getCategoryEmoji = (category) => {
     const categoryEmojis = {
-      'Vegetables': '🥕',
-      'Fruits': '🍎',
-      'Dairy': '🥛',
-      'Grains': '🌾',
-      'Spices': '🌶️',
-      'Meat': '🥩',
-      'Seafood': '🐟',
-      'Beverages': '☕',
-      'Bakery': '🍞',
-      'Oil': '🫗',
+      'Fresh Vegetables': '🥕',
+      'Fresh Fruits': '🍎',
+      'Specialty & Gourmet Pantry': '🍯',
+      'Nuts, Seeds & Superfoods': '🥜',
+      'Dry Groceries & Staples': '🌾',
+      'Vegan Dairy & Alternatives': '🥥',
+      'Standard Dairy': '🥛',
+      'Spices & Seasonings': '🌶️',
+      'Sauces, Oils & Vinegars': '🫗',
+      'Cafe Beverages': '☕',
+      'Frozen Foods': '🧊',
+      'Packaging & Disposables': '📦',
+      'Housekeeping & Cleaning': '🧹',
+      'Miscellaneous': '🔧',
       'Default': '📦'
     };
     return categoryEmojis[category] || categoryEmojis['Default'];

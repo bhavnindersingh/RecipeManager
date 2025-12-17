@@ -188,7 +188,7 @@ Stores all ingredient master data including costs and minimum stock levels.
 | name | VARCHAR(255) | NOT NULL | Ingredient name |
 | cost | DECIMAL(10,2) | NOT NULL | Cost per unit |
 | unit | VARCHAR(50) | NOT NULL | Unit of measurement (kg, L, pcs, etc.) |
-| category | VARCHAR(100) | | Ingredient category |
+| category | VARCHAR(100) | CHECK | Ingredient category (14 predefined values) |
 | minimum_stock | DECIMAL(10,2) | NOT NULL, DEFAULT 10 | Minimum stock threshold |
 | vendor_name | VARCHAR(255) | | Current vendor/supplier name |
 | vendor_phone | VARCHAR(20) | | Vendor contact phone number |
@@ -200,6 +200,23 @@ Stores all ingredient master data including costs and minimum stock levels.
 - `idx_ingredients_minimum_stock` on minimum_stock
 - `idx_ingredients_vendor_name` on vendor_name
 - `idx_ingredients_vendor_phone` on vendor_phone
+
+**Constraints:**
+- Category must be one of 14 predefined values:
+  1. Fresh Vegetables
+  2. Fresh Fruits
+  3. Specialty & Gourmet Pantry
+  4. Nuts, Seeds & Superfoods
+  5. Dry Groceries & Staples
+  6. Vegan Dairy & Alternatives
+  7. Standard Dairy
+  8. Spices & Seasonings
+  9. Sauces, Oils & Vinegars
+  10. Cafe Beverages
+  11. Frozen Foods
+  12. Packaging & Disposables
+  13. Housekeeping & Cleaning
+  14. Miscellaneous
 
 ---
 
@@ -586,6 +603,7 @@ Ingredient-specific inventory settings.
 9. `20251215120000_add_minimum_stock_to_ingredients.sql` - Minimum stock on ingredients
 10. `20251216000000_add_vendor_fields_to_ingredients.sql` - Vendor details for ingredients
 11. `20251216000001_update_pins_to_6_digits.sql` - Update PINs to 6 digits
+12. `20251217000000_update_ingredient_categories.sql` - Standardize ingredient categories
 
 ---
 
@@ -617,4 +635,4 @@ pending → preparing → ready
 
 **Last Updated:** 2025-12-17  
 **Database Version:** PostgreSQL 14+ (Supabase)  
-**Total Migrations:** 11
+**Total Migrations:** 12
