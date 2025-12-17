@@ -7,6 +7,7 @@ import '../styles/IngredientsManager.css';
 
 const IngredientsManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [ingredients, setIngredients] = useState([]);
   const [newIngredient, setNewIngredient] = useState({
     name: '',
@@ -168,12 +169,15 @@ const IngredientsManager = () => {
     XLSX.writeFile(wb, 'ingredients.xlsx');
   };
 
-  const importIngredients = (event) => {
+  const importIngredients = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Show loading toast
+    showToast('Processing import file...', 'info');
+
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
@@ -185,43 +189,79 @@ const IngredientsManager = () => {
         // Convert to JSON
         const jsonData = XLSX.utils.sheet_to_json(ws);
 
-        // Transform and validate data
-        const newIngredients = jsonData.map(row => {
-          const ingredient = {
-            id: Date.now() + Math.random(),
-            name: row.Name || row.name,
-            unit: row.Unit || row.unit,
-            cost: Number(row['Cost (₹)'] || row.cost || 0),
-            minimum_stock: Number(row['Min Stock'] || row.minimum_stock || 10),
-            category: row.Category || row.category || 'Fresh Vegetables',
-            vendor_name: row.Vendor || row.vendor_name || null,
-            vendor_phone: row.Phone || row.vendor_phone || null
-          };
+        if (jsonData.length === 0) {
+          showToast('No data found in the file', 'error');
+          return;
+        }
 
-          // Validate required fields
-          if (!ingredient.name || !ingredient.unit || ingredient.cost <= 0) {
-            throw new Error('Invalid ingredient data: Missing required fields or invalid cost');
+        let successCount = 0;
+        let errorCount = 0;
+        const newIngredients = [];
+
+        // Process each row sequentially to respect DB constraints
+        for (const row of jsonData) {
+          try {
+            const ingredientData = {
+              name: (row.Name || row.name || '').trim(),
+              unit: (row.Unit || row.unit || '').trim(),
+              cost: Number(row['Cost (₹)'] || row.cost || 0),
+              minimum_stock: Number(row['Min Stock'] || row['Min Stock'] || row.minimum_stock || 10),
+              category: (row.Category || row.category || 'Fresh Vegetables').trim(),
+              vendor_name: (row.Vendor || row.vendor_name || '').trim() || null,
+              vendor_phone: (row.Phone || row.vendor_phone || '').trim() || null
+            };
+
+            // Validate required fields
+            if (!ingredientData.name || !ingredientData.unit || ingredientData.cost <= 0) {
+              console.warn('Skipping invalid row:', row);
+              errorCount++;
+              continue;
+            }
+
+            // Check for duplicates in current list
+            const isDuplicate = ingredients.some(
+              existing => normalizeIngredientName(existing.name) === normalizeIngredientName(ingredientData.name)
+            );
+
+            if (isDuplicate) {
+              console.warn('Skipping duplicate:', ingredientData.name);
+              continue;
+            }
+
+            // Save to Database
+            const savedIngredient = await ingredientService.createIngredient(ingredientData);
+
+            // Add to new list with proper Date object
+            newIngredients.push({
+              ...savedIngredient,
+              createdAt: new Date(savedIngredient.created_at || Date.now())
+            });
+            successCount++;
+
+          } catch (err) {
+            console.error('Error saving ingredient:', err);
+            errorCount++;
           }
+        }
 
-          return ingredient;
-        });
-
-        // Update ingredients state
-        setIngredients(prev => {
-          // Create a map of existing ingredients by name
-          const existingMap = new Map(prev.map(ing => [ing.name.toLowerCase(), ing]));
-
-          // Filter out duplicates and combine with existing
-          const uniqueNew = newIngredients.filter(ing => !existingMap.has(ing.name.toLowerCase()));
-          return [...prev, ...uniqueNew];
-        });
+        // Update state with new ingredients at the top
+        setIngredients(prev => [...newIngredients, ...prev]);
 
         // Clear file input
         event.target.value = '';
-        showToast('Ingredients imported successfully', 'success');
+
+        // Show result message
+        if (successCount > 0) {
+          showToast(`Successfully imported ${successCount} ingredients${errorCount > 0 ? `. ${errorCount} failed.` : ''}`, 'success');
+        } else if (errorCount > 0) {
+          showToast(`Import failed. ${errorCount} items had errors.`, 'error');
+        } else {
+          showToast('No new ingredients were added (check for duplicates).', 'info');
+        }
+
       } catch (error) {
         console.error('Import error:', error);
-        showToast('Error importing ingredients: ' + error.message, 'error');
+        showToast('Error processing file: ' + error.message, 'error');
       }
     };
 
@@ -289,15 +329,17 @@ const IngredientsManager = () => {
     }
   };
 
-  // Filter ingredients based on search term
+  // Filter ingredients based on search term and category
   const filteredIngredients = ingredients
     .filter(ingredient => {
       const searchLower = searchTerm.toLowerCase();
-      return (
+      const matchesSearch = (
         ingredient.name.toLowerCase().includes(searchLower) ||
         ingredient.category.toLowerCase().includes(searchLower) ||
         (ingredient.vendor_name && ingredient.vendor_name.toLowerCase().includes(searchLower))
       );
+      const matchesCategory = selectedCategory === 'All' || ingredient.category === selectedCategory;
+      return matchesSearch && matchesCategory;
     });
 
   const handleInputChange = (e) => {
@@ -467,6 +509,26 @@ const IngredientsManager = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="category-filter-select"
+            style={{
+              padding: '0.75rem',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              backgroundColor: 'white',
+              fontSize: '0.9rem',
+              color: '#1e293b',
+              minWidth: '200px',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="All">All Categories</option>
+            {INGREDIENT_CATEGORIES.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
         </div>
         <div className="ingredient-count">
           Showing {filteredIngredients.length} of {ingredients.length} ingredients
