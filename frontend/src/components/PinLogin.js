@@ -158,13 +158,6 @@ const PinLogin = () => {
         </div>
 
         <div className="pin-help-text">
-          <p>Default PINs (Dev):</p>
-          <ul>
-            <li>Admin: 000000</li>
-            <li>Server: 111111</li>
-            <li>Kitchen: 222222</li>
-            <li>Store Manager: 333333</li>
-          </ul>
         </div>
       </div>
     </div>
