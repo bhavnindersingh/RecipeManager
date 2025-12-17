@@ -157,8 +157,7 @@ const PinLogin = () => {
           </button>
         </div>
 
-        <div className="pin-help-text">
-        </div>
+
       </div>
     </div>
   );

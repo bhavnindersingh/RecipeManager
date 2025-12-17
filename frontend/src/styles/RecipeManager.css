@@ -4,6 +4,43 @@
   padding-bottom: 3rem;
 }
 
+/* Header Stats */
+.recipe-stats {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: white;
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.95rem;
+  border: 1px solid var(--border-light);
+}
+
+.stat-badge svg {
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.stat-badge.success {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.stat-badge.success svg {
+  color: #059669;
+}
+
+
 /* Control Section */
 .recipe-controls {
   margin-bottom: 2rem;
@@ -342,4 +379,106 @@
   .filter-section {
     justify-content: center;
   }
+}
+
+/* --- New Card Styles --- */
+
+.card-top-badges {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 2;
+}
+
+/* Override existing category-tag positioning */
+.category-tag {
+  position: static;
+  /* Let it sit in the flex container */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.sku-badge {
+  background: var(--bg-dark);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: monospace;
+}
+
+.internal-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Distinctive Internal Card Style */
+.internal-card {
+  background: #fdfdfd;
+  border: 1px dashed #cbd5e1;
+}
+
+.internal-card:hover {
+  border-color: #94a3b8;
+  background: white;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.recipe-footer-info {
+  margin-top: auto;
+  padding: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.ingredients-count {
+  font-weight: 500;
+}
+
+.delivery-badge {
+  font-size: 1.2rem;
+  background: #ecfdf5;
+  padding: 6px;
+  border-radius: 50%;
+  border: 1px solid #a7f3d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metric.full-width {
+  grid-column: span 2;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.metric-txt {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.left-actions {
+  display: flex;
+}
+
+.right-actions {
+  display: flex;
+  gap: 8px;
 }

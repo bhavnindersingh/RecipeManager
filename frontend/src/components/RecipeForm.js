@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom';
 const emptyRecipe = {
   id: null,
   name: '',
-  category: 'Uncategorized',
+  category: 'Food',
   preparation_steps: '',
   cooking_method: '',
   plating_instructions: '',
@@ -28,6 +28,7 @@ const emptyRecipe = {
   available_for_delivery: false,
   is_production_recipe: true,
   delivery_image_url: '',
+  special_instruction_image: null,
   ingredients: [],
   created_at: null,
   updated_at: null,
@@ -44,8 +45,8 @@ const ImagePreview = ({ url, onRemove, alt, isViewMode }) => {
 
   if (!url) return null;
 
-  // Handle blob URLs, full URLs, and relative paths correctly
-  const imageUrl = url.startsWith('blob:') || url.startsWith('http') ? url :
+  // Handle blob URLs, full URLs, data URLs, and relative paths correctly
+  const imageUrl = url.startsWith('blob:') || url.startsWith('http') || url.startsWith('data:') ? url :
     `https://storage.googleapis.com/conscious-cafe-recipe-2024-uploads/${url}`;
 
   const handleImageClick = (e) => {
@@ -210,7 +211,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         id: '',
         name: '',
         unit: '',
-        cost: '0',
+        cost_per_unit: '0',
         quantity: '0'
       });
       // Clear any error messages
@@ -230,9 +231,11 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
     id: '',
     name: '',
     unit: '',
-    cost: '0',
+    cost_per_unit: '0',
     quantity: '0'
   });
+  const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
+  const [editingQuantity, setEditingQuantity] = useState('');
 
   // Track ingredients length changes
   const ingredientsLength = (recipe.ingredients || []).length;
@@ -243,7 +246,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         id: '',
         name: '',
         unit: '',
-        cost: '0',
+        cost_per_unit: '0',
         quantity: '0'
       });
     }
@@ -258,7 +261,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           setSkuPreview(nextSku);
         } catch (error) {
           console.error('Error fetching SKU preview:', error);
-          setSkuPreview('FMB 001'); // Fallback
+          setSkuPreview('FHB 001'); // Fallback
         }
       } else if (mode !== 'create' && recipe.sku) {
         // For edit/view mode, show existing SKU
@@ -307,6 +310,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
   const [imageFile, setImageFile] = useState(null);
   const [deliveryImageFile, setDeliveryImageFile] = useState(null);
+  const [specialInstructionImageFile, setSpecialInstructionImageFile] = useState(null);
 
   const handleImageChange = async (e, type = 'image') => {
     const file = e.target.files[0];
@@ -387,6 +391,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
       // Handle image uploads only if there are new files
       let imageUrl = recipe.image_url;
       let deliveryImageUrl = recipe.delivery_image_url;
+      let specialInstructionImage = recipe.special_instruction_image;
 
       if (imageFile) {
         imageUrl = await handleImageUpload(imageFile, 'image');
@@ -398,9 +403,14 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         if (!deliveryImageUrl) return;
       }
 
-      // Prepare recipe data
+      if (specialInstructionImageFile) {
+        specialInstructionImage = await handleImageUpload(specialInstructionImageFile, 'specialInstructionImage');
+        if (!specialInstructionImage) return;
+      }
+
+      // Prepare recipe data - build explicitly to avoid sending non-DB fields
       const recipeData = {
-        ...recipe,
+        name: recipe.name,
         category: recipe.category.trim(),
         preparation_steps: recipe.preparation_steps || '',
         cooking_method: recipe.cooking_method || '',
@@ -421,6 +431,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
         is_production_recipe: recipe.is_production_recipe !== false,
         image_url: imageUrl,
         delivery_image_url: deliveryImageUrl,
+        special_instruction_image: specialInstructionImage,
         ingredients: currentIngredients.map(ing => ({
           id: Number(ing.id),
           quantity: Number(ing.quantity)
@@ -445,6 +456,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
 
   const handleRemoveImage = () => {
     if (isViewMode) return;
+    setImageFile(null);
     setRecipe(prev => ({
       ...prev,
       image: null,
@@ -461,11 +473,41 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
   // Handle delivery image removal
   const handleRemoveDeliveryImage = () => {
     if (isViewMode) return;
+    setDeliveryImageFile(null);
     setRecipe(prev => ({
       ...prev,
       delivery_image: null,
       delivery_image_preview: null,
       delivery_image_url: null
+    }));
+  };
+
+  // Handle special instruction image change
+  const handleSpecialInstructionImageChange = (e) => {
+    if (isViewMode) return;
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        // Create a temporary preview URL for the selected file
+        const previewUrl = URL.createObjectURL(file);
+        setSpecialInstructionImageFile(file);
+        setRecipe(prev => ({
+          ...prev,
+          special_instruction_image: previewUrl
+        }));
+      } catch (error) {
+        console.error('Error handling special instruction image:', error);
+      }
+    }
+  };
+
+  // Handle special instruction image removal
+  const handleRemoveSpecialInstructionImage = () => {
+    if (isViewMode) return;
+    setSpecialInstructionImageFile(null);
+    setRecipe(prev => ({
+      ...prev,
+      special_instruction_image: null
     }));
   };
 
@@ -490,7 +532,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
       id: selectedId,
       name: selectedIng?.name || '',
       unit: selectedIng?.unit || '',
-      cost: selectedIng?.cost || '0',
+      cost_per_unit: selectedIng?.cost_per_unit || selectedIng?.cost || '0',
       quantity: '0'
     });
   };
@@ -498,72 +540,55 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
   const handleAddIngredient = () => {
     if (isViewMode) return;
 
-    // Validate ingredient selection
-    if (!selectedIngredient.id) {
-      setError({ message: 'Please select an ingredient', type: 'error' });
+    if (!selectedIngredient.id || !selectedIngredient.quantity || parseFloat(selectedIngredient.quantity) <= 0) {
+      setError({ message: 'Please select an ingredient and enter a valid quantity', type: 'error' });
+      setTimeout(() => setError({ message: '', type: '' }), 3000);
       return;
     }
 
-    // Validate quantity
+    const ingredient = ingredients.find(ing => ing.id === parseInt(selectedIngredient.id));
+    if (!ingredient) {
+      setError({ message: 'Ingredient not found', type: 'error' });
+      setTimeout(() => setError({ message: '', type: '' }), 3000);
+      return;
+    }
+
+    // Check if ingredient already exists in the list
+    const isDuplicate = (recipe.ingredients || []).some(
+      ing => ing.id === parseInt(selectedIngredient.id)
+    );
+
+    if (isDuplicate) {
+      setError({ message: 'This ingredient is already in the recipe. Please edit the existing entry instead.', type: 'error' });
+      setTimeout(() => setError({ message: '', type: '' }), 3000);
+      return;
+    }
+
     const quantity = parseFloat(selectedIngredient.quantity);
-    if (isNaN(quantity) || quantity <= 0) {
-      setError({ message: 'Please enter a valid quantity', type: 'error' });
-      return;
-    }
+    // Normalize cost field - database might have 'cost' or 'cost_per_unit'
+    const costPerUnit = parseFloat(ingredient.cost_per_unit || ingredient.cost || 0);
+    const totalCost = (costPerUnit * quantity).toFixed(2);
 
-    // Find the selected ingredient from the ingredients list
-    const selectedIng = ingredients.find(ing => ing.id === parseInt(selectedIngredient.id));
-    if (!selectedIng) {
-      setError({ message: 'Selected ingredient not found', type: 'error' });
-      return;
-    }
+    const newIngredient = {
+      id: ingredient.id,
+      name: ingredient.name,
+      quantity: quantity,
+      unit: ingredient.unit,
+      cost_per_unit: costPerUnit,
+      totalCost: totalCost,
+      uniqueId: `${ingredient.id}-${Date.now()}`
+    };
 
-    const cost = parseFloat(selectedIng.cost) || 0;
-    const totalCost = cost * quantity;
+    // Add new ingredient
+    setRecipe(prev => ({
+      ...prev,
+      ingredients: [...(prev.ingredients || []), newIngredient]
+    }));
+    setError({ message: `Added ${ingredient.name} to recipe`, type: 'success' });
 
-    // Ensure recipe.ingredients exists
-    const currentIngredients = recipe.ingredients || [];
-
-    // Check if ingredient already exists
-    const existingIngredientIndex = currentIngredients.findIndex(ing => ing.id === parseInt(selectedIngredient.id));
-
-    setRecipe(prev => {
-      const updatedIngredients = [...(prev.ingredients || [])];
-
-      if (existingIngredientIndex !== -1) {
-        // Update existing ingredient
-        updatedIngredients[existingIngredientIndex] = {
-          ...updatedIngredients[existingIngredientIndex],
-          quantity: (parseFloat(updatedIngredients[existingIngredientIndex].quantity) + quantity).toFixed(2),
-          totalCost: (parseFloat(updatedIngredients[existingIngredientIndex].totalCost) + totalCost).toFixed(2)
-        };
-      } else {
-        // Add new ingredient
-        updatedIngredients.push({
-          id: parseInt(selectedIngredient.id),
-          name: selectedIng.name,
-          unit: selectedIng.unit,
-          cost: cost.toFixed(2),
-          quantity: quantity.toFixed(2),
-          totalCost: totalCost.toFixed(2)
-        });
-      }
-
-      return {
-        ...prev,
-        ingredients: updatedIngredients
-      };
-    });
-
-    // Reset selected ingredient
-    setSelectedIngredient({
-      id: '',
-      name: '',
-      unit: '',
-      cost: '0',
-      quantity: '0'
-    });
-    setError({ message: '', type: '' });
+    // Reset form
+    setSelectedIngredient({ id: '', name: '', unit: '', cost_per_unit: '0', quantity: '' });
+    setTimeout(() => setError({ message: '', type: '' }), 3000);
   };
 
   useEffect(() => {
@@ -573,10 +598,12 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
     // Then, ensure all ingredients have proper totalCost
     const updatedIngredients = recipe.ingredients.map(ing => {
       const quantity = parseFloat(ing.quantity) || 0;
-      const cost = parseFloat(ing.cost) || 0;
-      const totalCost = quantity * cost;
+      // Handle both cost_per_unit (new) and cost (old) for backward compatibility
+      const costPerUnit = parseFloat(ing.cost_per_unit || ing.cost) || 0;
+      const totalCost = quantity * costPerUnit;
       return {
         ...ing,
+        cost_per_unit: costPerUnit, // Normalize to cost_per_unit
         totalCost: totalCost.toFixed(2)
       };
     });
@@ -597,21 +624,37 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
     const totalCost = totalIngredientsCost * (1 + overhead / 100);
     const sellingPrice = parseFloat(recipe.selling_price) || 0;
     const sales = parseFloat(recipe.sales) || 0;
-    const revenue = sellingPrice * sales;
-    const profit = revenue - (totalCost * sales);
-    const profitMargin = Math.min(revenue > 0 ? (profit / revenue) * 100 : 0, 999.99);
     const markupFactor = Math.min(totalCost > 0 ? sellingPrice / totalCost : 0, 999.99);
+
+    // NEW: Calculate actionable metrics from POS data
+    const avgSalePrice = parseFloat(salesData.average_sale_price) || sellingPrice;
+    const profitPerUnit = avgSalePrice - totalCost;
+    const totalProfitEarned = profitPerUnit * sales;
+    const actualProfitMargin = Math.min(avgSalePrice > 0 ? (profitPerUnit / avgSalePrice) * 100 : 0, 999.99);
+
+    // Calculate sales velocity (units per day)
+    let salesVelocity = 0;
+    if (salesData.last_sold_at && sales > 0) {
+      const daysSinceFirstSale = Math.max(1, Math.ceil((new Date() - new Date(salesData.last_sold_at)) / (1000 * 60 * 60 * 24)));
+      salesVelocity = (sales / daysSinceFirstSale).toFixed(1);
+    }
+
+    // Price variance check
+    const priceVariance = avgSalePrice - sellingPrice;
 
     setRecipe(prev => ({
       ...prev,
       total_cost: totalCost.toFixed(2),
-      revenue: revenue.toFixed(2),
-      profit: profit.toFixed(2),
-      profit_margin: profitMargin.toFixed(2),
-      markup_factor: markupFactor.toFixed(2)
+      profit_per_unit: profitPerUnit.toFixed(2),
+      total_profit_earned: totalProfitEarned.toFixed(2),
+      profit_margin: actualProfitMargin.toFixed(2),
+      markup_factor: markupFactor.toFixed(2),
+      sales_velocity: salesVelocity,
+      price_variance: priceVariance.toFixed(2),
+      avg_sale_price: avgSalePrice.toFixed(2)
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe.ingredients, recipe.overhead, recipe.selling_price, recipe.sales]);
+  }, [recipe.ingredients, recipe.overhead, recipe.selling_price, recipe.sales, salesData]);
 
   const handleNameChange = (e) => {
     if (isViewMode || mode === 'edit') return;
@@ -638,9 +681,10 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           {error.message}
         </div>
       )}
-      <div className="page-title-container">
+
+      <div className="page-title-card">
         <h1 className="page-title">
-          {mode === 'edit' ? 'Edit Recipe' : mode === 'view' ? 'Show Recipe' : 'Create Recipe'}
+          {mode === 'edit' ? 'Edit Recipe' : mode === 'view' ? 'View Recipe' : 'Create Recipe'}
         </h1>
       </div>
 
@@ -711,21 +755,23 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           </div>
 
           <div className="form-group production-recipe-group">
-            <div className="checkbox-item production-checkbox">
-              <input
-                type="checkbox"
-                id="is_production_recipe"
-                name="is_production_recipe"
-                checked={recipe.is_production_recipe !== false}
-                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.checked }))}
-                className="styled-checkbox"
-                disabled={isViewMode}
-              />
-              <label htmlFor="is_production_recipe" className="checkbox-label">
-                Production Recipe
-                <span className="checkbox-hint">Include this recipe in POS for customer orders</span>
-              </label>
-            </div>
+            <label className="switch-group">
+              <div className="switch-label-content">
+                <span className="switch-title">Production Recipe</span>
+                <span className="switch-description">Include in POS for customer orders</span>
+              </div>
+              <div className="switch">
+                <input
+                  type="checkbox"
+                  id="is_production_recipe"
+                  name="is_production_recipe"
+                  checked={recipe.is_production_recipe !== false}
+                  onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.checked }))}
+                  disabled={isViewMode}
+                />
+                <span className="slider"></span>
+              </div>
+            </label>
           </div>
 
           <div className="form-group">
@@ -755,102 +801,51 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           </div>
         </div>
 
-        {/* Preparation Procedure Section */}
-        <div className="form-section preparation-section">
-          <h2>Preparation Procedure</h2>
-          <div className="preparation-content">
-            <div className="preparation-item">
-              <div className="preparation-item-header">
-                <span role="img" aria-label="steps">📝</span>
-                <label>Preparation Steps</label>
-              </div>
-              <textarea
-                name="preparation_steps"
-                value={recipe.preparation_steps}
-                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-                placeholder="List the steps to prepare this recipe..."
-                disabled={isViewMode}
-              />
-            </div>
-
-            <div className="preparation-item">
-              <div className="preparation-item-header">
-                <span role="img" aria-label="cooking">🍳</span>
-                <label>Cooking Method</label>
-              </div>
-              <textarea
-                name="cooking_method"
-                value={recipe.cooking_method}
-                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-                placeholder="Describe the cooking method and techniques..."
-                disabled={isViewMode}
-              />
-            </div>
-
-            <div className="preparation-item">
-              <div className="preparation-item-header">
-                <span role="img" aria-label="plating">🍽️</span>
-                <label>Plating Instructions</label>
-              </div>
-              <textarea
-                name="plating_instructions"
-                value={recipe.plating_instructions}
-                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-                placeholder="Describe how to plate and present the dish..."
-                disabled={isViewMode}
-              />
-            </div>
-
-            <div className="preparation-item">
-              <div className="preparation-item-header">
-                <span role="img" aria-label="notes">📌</span>
-                <label>Chef's Notes</label>
-              </div>
-              <textarea
-                name="chefs_notes"
-                value={recipe.chefs_notes}
-                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-                placeholder="Add any special tips, variations, or notes..."
-                disabled={isViewMode}
-              />
-            </div>
-          </div>
-        </div>
-
         {/* Recipe Ingredients Section */}
         <div className="form-section ingredients-section">
           <h2>Recipe Ingredients</h2>
           <div className="add-ingredient-form">
             <div className="input-row">
-              <div className="form-group" style={{ flex: 2 }}>
-                <label htmlFor="ingredient">Select Ingredient</label>
+              <div className="form-group">
+                <label>Select Ingredient</label>
                 <select
-                  id="ingredient"
-                  className="form-control ingredient-select"
+                  className="form-control"
                   value={selectedIngredient.id}
-                  onChange={handleIngredientChange}
+                  onChange={(e) => {
+                    const ingredientId = e.target.value;
+                    const ingredient = ingredients.find(ing => ing.id === parseInt(ingredientId));
+                    if (ingredient) {
+                      setSelectedIngredient({
+                        id: ingredientId,
+                        name: ingredient.name,
+                        unit: ingredient.unit,
+                        cost_per_unit: ingredient.cost_per_unit || ingredient.cost || '0',
+                        quantity: selectedIngredient.quantity || ''
+                      });
+                    }
+                  }}
                   disabled={isViewMode}
                 >
-                  <option value="">Select an ingredient...</option>
+                  <option value="">Choose an ingredient...</option>
                   {ingredients.map(ing => (
                     <option key={ing.id} value={ing.id}>
-                      {ing.name} (₹{parseFloat(ing.cost).toFixed(2)}/{ing.unit})
+                      {ing.name} (₹{parseFloat(ing.cost_per_unit || ing.cost || 0).toFixed(2)}/{ing.unit})
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="quantity">Quantity</label>
+              <div className="form-group">
+                <label>Quantity</label>
                 <input
                   type="number"
-                  id="quantity"
-                  className="form-control quantity-input"
+                  className="form-control"
                   value={selectedIngredient.quantity}
                   onChange={(e) => !isViewMode && setSelectedIngredient(prev => ({ ...prev, quantity: e.target.value }))}
                   min="0"
                   step="any"
                   disabled={isViewMode}
+                  placeholder="0"
                 />
               </div>
 
@@ -867,8 +862,8 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                 Add
               </button>
             </div>
-            {/* Removed separate button, now it's inline */}
           </div>
+          {/* Removed separate button, now it's inline */}
 
           {error.message && <div className="error-message">{error.message}</div>}
 
@@ -883,34 +878,126 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                 </tr>
               </thead>
               <tbody>
-                {(recipe.ingredients || []).map((ing, index) => (
-                  <tr key={ing.uniqueId || `${ing.id}-${Date.now()}-${index}`}>
-                    <td className="ingredient-name">{ing.name}</td>
-                    <td className="ingredient-quantity">{ing.quantity} {ing.unit}</td>
-                    <td className="ingredient-cost">₹{parseFloat(ing.totalCost)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="remove-ingredient-btn"
-                        onClick={() => {
-                          if (isViewMode) return;
-                          const removedIngredient = recipe.ingredients[index];
-                          setRecipe(prev => ({
-                            ...prev,
-                            ingredients: prev.ingredients.filter((_, i) => i !== index)
-                          }));
-                          setError({ message: `Removed ${removedIngredient.name || 'ingredient'} from recipe`, type: 'error' });
-                        }}
-                        title="Remove ingredient"
-                        disabled={isViewMode}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {(recipe.ingredients || []).map((ing, index) => {
+                  return (
+                    <tr key={ing.uniqueId || `${ing.id}-${Date.now()}-${index}`}>
+                      <td className="ingredient-name">{ing.name}</td>
+                      <td className="ingredient-quantity">
+                        {editingIngredientIndex === index ? (
+                          <input
+                            type="number"
+                            className="form-control inline-edit-input"
+                            value={editingQuantity}
+                            onChange={(e) => setEditingQuantity(e.target.value)}
+                            min="0"
+                            step="any"
+                            autoFocus
+                          />
+                        ) : (
+                          `${ing.quantity} ${ing.unit}`
+                        )}
+                      </td>
+                      <td className="ingredient-cost">
+                        ₹{editingIngredientIndex === index
+                          ? (parseFloat(ing.cost_per_unit || ing.cost || 0) * parseFloat(editingQuantity || 0)).toFixed(2)
+                          : parseFloat(ing.totalCost || 0).toFixed(2)
+                        }
+                      </td>
+                      <td>
+                        <div className="ingredient-actions">
+                          {editingIngredientIndex === index ? (
+                            <>
+                              <button
+                                type="button"
+                                className="save-ingredient-btn"
+                                onClick={() => {
+                                  const newQuantity = parseFloat(editingQuantity);
+                                  if (newQuantity > 0) {
+                                    const costPerUnit = parseFloat(ing.cost_per_unit || ing.cost || 0);
+                                    const newTotalCost = (costPerUnit * newQuantity).toFixed(2);
+                                    setRecipe(prev => ({
+                                      ...prev,
+                                      ingredients: prev.ingredients.map((ingredient, idx) =>
+                                        idx === index
+                                          ? { ...ingredient, quantity: newQuantity, totalCost: newTotalCost }
+                                          : ingredient
+                                      )
+                                    }));
+                                    setEditingIngredientIndex(null);
+                                    setEditingQuantity('');
+                                    setError({ message: `Updated ${ing.name}`, type: 'success' });
+                                    setTimeout(() => setError({ message: '', type: '' }), 3000);
+                                  } else {
+                                    setError({ message: 'Quantity must be greater than 0', type: 'error' });
+                                    setTimeout(() => setError({ message: '', type: '' }), 3000);
+                                  }
+                                }}
+                                title="Save changes"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                className="cancel-ingredient-btn"
+                                onClick={() => {
+                                  setEditingIngredientIndex(null);
+                                  setEditingQuantity('');
+                                }}
+                                title="Cancel editing"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="edit-ingredient-btn"
+                                onClick={() => {
+                                  if (isViewMode) return;
+                                  console.log('Edit clicked! Index:', index, 'Quantity:', ing.quantity);
+                                  setEditingIngredientIndex(index);
+                                  setEditingQuantity(ing.quantity.toString());
+                                  console.log('Set editingIngredientIndex to:', index);
+                                }}
+                                title="Edit ingredient"
+                                disabled={isViewMode}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                className="remove-ingredient-btn"
+                                onClick={() => {
+                                  if (isViewMode) return;
+                                  const removedIngredient = recipe.ingredients[index];
+                                  setRecipe(prev => ({
+                                    ...prev,
+                                    ingredients: prev.ingredients.filter((_, i) => i !== index)
+                                  }));
+                                  setError({ message: `Removed ${removedIngredient.name || 'ingredient'} from recipe`, type: 'success' });
+                                }}
+                                title="Remove ingredient"
+                                disabled={isViewMode}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -946,77 +1033,7 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
             />
           </div>
 
-          {/* Sales Data from POS */}
-          {mode !== 'create' && recipe.id ? (
-            <div className="sales-analytics-card">
-              <div className="sales-card-header">
-                <h3>📊 Sales Analytics (from POS)</h3>
-                <button
-                  type="button"
-                  className="refresh-sales-btn"
-                  onClick={async () => {
-                    setLoadingSalesData(true);
-                    try {
-                      const data = await recipeService.getRecipeSalesData(recipe.id);
-                      setSalesData(data);
-                      setRecipe(prev => ({ ...prev, sales: data.total_units_sold || 0 }));
-                      setError({ message: 'Sales data refreshed successfully', type: 'success' });
-                    } catch (error) {
-                      setError({ message: 'Failed to refresh sales data', type: 'error' });
-                    } finally {
-                      setLoadingSalesData(false);
-                    }
-                  }}
-                  disabled={loadingSalesData}
-                >
-                  {loadingSalesData ? '⏳' : '🔄'} Refresh
-                </button>
-              </div>
-              <div className="sales-stats-grid">
-                <div className="sales-stat">
-                  <div className="stat-label">Total Units Sold</div>
-                  <div className="stat-value">{salesData.total_units_sold || 0}</div>
-                </div>
-                <div className="sales-stat">
-                  <div className="stat-label">Total Revenue</div>
-                  <div className="stat-value">₹{Number(salesData.total_revenue || 0).toFixed(2)}</div>
-                </div>
-                <div className="sales-stat">
-                  <div className="stat-label">Avg Sale Price</div>
-                  <div className="stat-value">₹{Number(salesData.average_sale_price || 0).toFixed(2)}</div>
-                </div>
-                <div className="sales-stat">
-                  <div className="stat-label">Orders Count</div>
-                  <div className="stat-value">{salesData.order_count || 0}</div>
-                </div>
-              </div>
-              {salesData.last_sold_at && (
-                <div className="last-sold-info">
-                  Last sold: {new Date(salesData.last_sold_at).toLocaleString()}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="form-group">
-              <label className="form-label" htmlFor="sales">Sales (units)</label>
-              <input
-                type="number"
-                id="sales"
-                name="sales"
-                className="form-control"
-                value={recipe.sales}
-                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-                min="0"
-                max="999999"
-                disabled={isViewMode}
-                placeholder="Enter expected sales (POS data will replace this after first sale)"
-              />
-              <div className="field-hint">
-                Enter estimated sales for MRP calculations. This will be replaced with actual POS data once the recipe is created.
-              </div>
-            </div>
-          )}
-
+          {/* Sales Data from POS or Default Placeholder */}
           <div className="form-group">
             <label htmlFor="overhead">Overhead % *</label>
             <input
@@ -1034,37 +1051,154 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
             />
           </div>
 
+          {/* Sales Data from POS or Default Placeholder */}
+          {mode !== 'create' && recipe.id ? (
+            <div className="sales-analytics-section">
+              <div className="sales-header">
+                <div className="sales-title-row">
+                  <h3>📊 Sales Analytics (from POS)</h3>
+                  <button
+                    type="button"
+                    className="refresh-sales-btn"
+                    onClick={async () => {
+                      setLoadingSalesData(true);
+                      try {
+                        const data = await recipeService.getRecipeSalesData(recipe.id);
+                        setSalesData(data);
+                        setRecipe(prev => ({ ...prev, sales: data.total_units_sold || 0 }));
+                        setError({ message: 'Sales data refreshed successfully', type: 'success' });
+                      } catch (error) {
+                        setError({ message: 'Failed to refresh sales data', type: 'error' });
+                      } finally {
+                        setLoadingSalesData(false);
+                      }
+                    }}
+                    disabled={loadingSalesData}
+                  >
+                    {loadingSalesData ? '⏳' : '🔄'} Refresh
+                  </button>
+                </div>
+                {salesData.last_sold_at && (
+                  <div className="last-sold-badge">
+                    Last sold: {new Date(salesData.last_sold_at).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="sales-metrics-grid">
+                <div className="sales-metric-card primary">
+                  <div className="metric-icon">📦</div>
+                  <div className="metric-content">
+                    <div className="metric-label">Total Units Sold</div>
+                    <div className="metric-value">{salesData.total_units_sold || 0}</div>
+                  </div>
+                </div>
+
+                <div className="sales-metric-card success">
+                  <div className="metric-icon">💰</div>
+                  <div className="metric-content">
+                    <div className="metric-label">Total Revenue</div>
+                    <div className="metric-value">₹{Number(salesData.total_revenue || 0).toFixed(2)}</div>
+                  </div>
+                </div>
+
+                <div className="sales-metric-card info">
+                  <div className="metric-icon">💵</div>
+                  <div className="metric-content">
+                    <div className="metric-label">Avg Sale Price</div>
+                    <div className="metric-value">₹{Number(salesData.average_sale_price || 0).toFixed(2)}</div>
+                  </div>
+                </div>
+
+                <div className="sales-metric-card accent">
+                  <div className="metric-icon">🛒</div>
+                  <div className="metric-content">
+                    <div className="metric-label">Orders Count</div>
+                    <div className="metric-value">{salesData.order_count || 0}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="sales-info-card">
+              <div className="info-icon">💡</div>
+              <div className="info-content">
+                <strong>Sales & Profit Projections</strong>
+                <p>Profit metrics will calculate automatically once this item starts selling on the POS.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Smart Alerts */}
+          {mode !== 'create' && recipe.id && (
+            <div className="pricing-alerts">
+              {parseFloat(recipe.markup_factor) < 4 && (
+                <div className="alert alert-warning">
+                  ⚠️ <strong>Markup Below Target:</strong> Current markup is {recipe.markup_factor}x. Target is 4x or higher for healthy margins.
+                </div>
+              )}
+              {parseFloat(recipe.price_variance) !== 0 && Math.abs(parseFloat(recipe.price_variance)) > 1 && (
+                <div className={`alert ${parseFloat(recipe.price_variance) > 0 ? 'alert-info' : 'alert-warning'}`}>
+                  {parseFloat(recipe.price_variance) > 0 ? '💡' : '⚠️'} <strong>Price Variance Detected:</strong> Actual sale price (₹{recipe.avg_sale_price}) differs from listed price (₹{recipe.selling_price}) by ₹{Math.abs(parseFloat(recipe.price_variance)).toFixed(2)}
+                  {parseFloat(recipe.price_variance) > 0 ? ' - You could increase your listed price!' : ' - Consider investigating discounts.'}
+                </div>
+              )}
+            </div>
+          )
+          }
+
           <div className="financial-metrics">
+            {/* Core Costing Metrics */}
             <div className="metric-card">
-              <div className="metric-label">Total Cost</div>
+              <div className="metric-label">Total Cost (per unit)</div>
               <div className="metric-value">₹{recipe.total_cost}</div>
             </div>
             <div className={`metric-card ${parseFloat(recipe.markup_factor) >= 4 ? 'metric-success' : 'metric-warning'}`}>
               <div className="metric-label">Markup Factor</div>
               <div className="metric-value">{recipe.markup_factor}x</div>
+              <div className="metric-hint">{parseFloat(recipe.markup_factor) >= 4 ? '✅ Target met' : '⚠️ Below 4x target'}</div>
             </div>
-            <div className="metric-card">
-              <div className="metric-label">Revenue</div>
-              <div className="metric-value">₹{recipe.revenue}</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Profit</div>
-              <div className="metric-value">₹{recipe.profit}</div>
-            </div>
-            <div className="metric-card">
+            <div className={`metric-card ${parseFloat(recipe.profit_margin) >= 60 ? 'metric-success' : 'metric-warning'}`}>
               <div className="metric-label">Profit Margin</div>
               <div className="metric-value">{recipe.profit_margin}%</div>
             </div>
-            <div className="metric-card">
-              <div className="metric-label">Sales (units)</div>
-              <div className="metric-value">{recipe.sales}</div>
-            </div>
-          </div>
-        </div>
 
-        {/* Menu Availability Section */}
-        <div className="form-section menu-availability-section">
-          <h2>Menu Availability</h2>
+            {/* Actionable POS Metrics - Only show when sales data exists */}
+            {mode !== 'create' && recipe.id && parseFloat(recipe.sales) > 0 && (
+              <>
+                <div className="metric-card metric-primary">
+                  <div className="metric-label">💰 Profit Per Unit</div>
+                  <div className="metric-value">₹{recipe.profit_per_unit}</div>
+                  <div className="metric-hint">You earn this per sale</div>
+                </div>
+                <div className="metric-card metric-success">
+                  <div className="metric-label">💵 Total Profit Earned</div>
+                  <div className="metric-value">₹{recipe.total_profit_earned}</div>
+                  <div className="metric-hint">Lifetime earnings</div>
+                </div>
+                <div className={`metric-card ${parseFloat(recipe.sales_velocity) > 20 ? 'metric-hot' : parseFloat(recipe.sales_velocity) > 5 ? 'metric-warm' : 'metric-cool'}`}>
+                  <div className="metric-label">
+                    {parseFloat(recipe.sales_velocity) > 20 ? '🔥' : parseFloat(recipe.sales_velocity) > 5 ? '🟡' : '❄️'} Sales Velocity
+                  </div>
+                  <div className="metric-value">{recipe.sales_velocity || '0'}/day</div>
+                  <div className="metric-hint">
+                    {parseFloat(recipe.sales_velocity) > 20 ? 'Hot seller!' : parseFloat(recipe.sales_velocity) > 5 ? 'Moderate' : 'Slow mover'}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div >
+
+        {/* SKU Availability Channels Section */}
+        < div className="form-section menu-availability-section" >
+          <h2>SKU Availability Channels</h2>
           <div className="form-group">
             <div className="checkbox-group">
               <div className="checkbox-item">
@@ -1077,32 +1211,9 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                   className="styled-checkbox"
                   disabled={isViewMode}
                 />
-                <label htmlFor="print_menu_ready" className="checkbox-label">Print Menu Ready</label>
+                <label htmlFor="print_menu_ready" className="checkbox-label">Dine in Menu</label>
               </div>
-              <div className="checkbox-item">
-                <input
-                  type="checkbox"
-                  id="qr_menu_ready"
-                  name="qr_menu_ready"
-                  checked={recipe.qr_menu_ready}
-                  onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.checked }))}
-                  className="styled-checkbox"
-                  disabled={isViewMode}
-                />
-                <label htmlFor="qr_menu_ready" className="checkbox-label">QR Menu Ready</label>
-              </div>
-              <div className="checkbox-item">
-                <input
-                  type="checkbox"
-                  id="website_menu_ready"
-                  name="website_menu_ready"
-                  checked={recipe.website_menu_ready}
-                  onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, [e.target.name]: e.target.checked }))}
-                  className="styled-checkbox"
-                  disabled={isViewMode}
-                />
-                <label htmlFor="website_menu_ready" className="checkbox-label">Website Menu Ready</label>
-              </div>
+
               <div className="checkbox-item">
                 <input
                   type="checkbox"
@@ -1114,45 +1225,137 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
                   disabled={isViewMode}
                 />
                 <label htmlFor="available_for_delivery" className="checkbox-label">
-                  Available for Delivery
+                  Delivery Ready
                 </label>
               </div>
             </div>
           </div>
 
           {/* Delivery Image Section - Inside Menu Availability */}
-          {recipe.available_for_delivery && (
-            <div className="delivery-image-section">
-              <label>Delivery Image</label>
+          {
+            recipe.available_for_delivery && (
+              <div className="delivery-image-section">
+                <label>Delivery Image</label>
+                <div className="image-upload-section">
+                  {!recipe.delivery_image && !recipe.delivery_image_preview && !recipe.delivery_image_url ? (
+                    <div className="image-upload-container">
+                      <input
+                        type="file"
+                        onChange={handleDeliveryImageChange}
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id="delivery-image"
+                        disabled={isViewMode}
+                      />
+                      <label htmlFor="delivery-image" className="image-upload-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7m4 0v4m0 0l-4-4m4 4l4-4" />
+                        </svg>
+                        <p>Upload delivery presentation image</p>
+                        <span className="upload-hint">This image will be shown to customers during delivery</span>
+                      </label>
+                    </div>
+                  ) : (
+                    <ImagePreview url={recipe.delivery_image_preview || recipe.delivery_image_url} onRemove={handleRemoveDeliveryImage} alt="Delivery preview" isViewMode={isViewMode} />
+                  )}
+                </div>
+              </div>
+            )
+          }
+        </div >
+
+        {/* Preparation Procedure Section - Moved to end */}
+        < div className="form-section preparation-section" >
+          <h2>Preparation Procedure</h2>
+          <div className="preparation-grid">
+            <div className="form-group">
+              <label>📝 Preparation Steps</label>
+              <textarea
+                className="form-control"
+                value={recipe.preparation_steps}
+                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, preparation_steps: e.target.value }))}
+                placeholder="List the steps to prepare this recipe..."
+                disabled={isViewMode}
+              />
+              <span className="field-hint">Step-by-step instructions</span>
+            </div>
+
+            <div className="form-group">
+              <label>🍳 Cooking Method</label>
+              <textarea
+                className="form-control"
+                value={recipe.cooking_method}
+                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, cooking_method: e.target.value }))}
+                placeholder="Describe the cooking method and techniques..."
+                disabled={isViewMode}
+              />
+              <span className="field-hint">Cooking techniques used</span>
+            </div>
+
+            <div className="form-group">
+              <label>🍽️ Plating Instructions</label>
+              <textarea
+                className="form-control"
+                value={recipe.plating_instructions}
+                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, plating_instructions: e.target.value }))}
+                placeholder="Describe how to plate and present..."
+                disabled={isViewMode}
+              />
+              <span className="field-hint">Presentation guidelines</span>
+            </div>
+
+            <div className="form-group">
+              <label>📌 Chef's Notes</label>
+              <textarea
+                className="form-control"
+                value={recipe.chefs_notes}
+                onChange={(e) => !isViewMode && setRecipe(prev => ({ ...prev, chefs_notes: e.target.value }))}
+                placeholder="Add any special tips, variations, or notes..."
+                disabled={isViewMode}
+              />
+              <span className="field-hint">Special tips and variations</span>
+            </div>
+
+            {/* Special Instruction Image Upload */}
+            <div className="form-group">
+              <label>📸 Special Instructions Image</label>
               <div className="image-upload-section">
-                {!recipe.delivery_image && !recipe.delivery_image_preview && !recipe.delivery_image_url ? (
+                {!recipe.special_instruction_image ? (
                   <div className="image-upload-container">
                     <input
                       type="file"
-                      onChange={handleDeliveryImageChange}
+                      id="special-instruction-image"
                       accept="image/*"
+                      onChange={handleSpecialInstructionImageChange}
                       style={{ display: 'none' }}
-                      id="delivery-image"
                       disabled={isViewMode}
                     />
-                    <label htmlFor="delivery-image" className="image-upload-placeholder">
+                    <label htmlFor="special-instruction-image" className="image-upload-placeholder">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7m4 0v4m0 0l-4-4m4 4l4-4" />
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
                       </svg>
-                      <p>Upload delivery presentation image</p>
-                      <span className="upload-hint">This image will be shown to customers during delivery</span>
+                      <p>Upload Special Instructions</p>
+                      <span className="upload-hint">Visual guide for preparation</span>
                     </label>
                   </div>
                 ) : (
-                  <ImagePreview url={recipe.delivery_image_preview || recipe.delivery_image_url} onRemove={handleRemoveDeliveryImage} alt="Delivery preview" isViewMode={isViewMode} />
+                  <ImagePreview
+                    url={recipe.special_instruction_image}
+                    onRemove={handleRemoveSpecialInstructionImage}
+                    alt="Special instructions"
+                    isViewMode={isViewMode}
+                  />
                 )}
               </div>
+              <span className="field-hint">Optional visual guide for complex steps</span>
             </div>
-          )}
-        </div>
+          </div>
+        </div >
 
         {/* Action Buttons Section */}
-        <div className="action-buttons-card">
+        < div className="action-buttons-card" >
           {mode === 'view' ? (
             <button
               type="button"
@@ -1179,8 +1382,8 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
               </button>
             </>
           )}
-        </div>
-      </form>
+        </div >
+      </form >
       {showImageModal && (
         <div className="image-modal" onClick={() => setShowImageModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -1193,20 +1396,22 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
           </div>
         </div>
       )}
-      {showDeliveryImageModal && (
-        <div className="image-modal" onClick={() => setShowDeliveryImageModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">Delivery Presentation Image</div>
-            <img src={recipe.delivery_image_preview || recipe.delivery_image_url} alt="Delivery full view" loading="eager" />
-            <button className="close-modal" onClick={() => setShowDeliveryImageModal(false)}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
+      {
+        showDeliveryImageModal && (
+          <div className="image-modal" onClick={() => setShowDeliveryImageModal(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">Delivery Presentation Image</div>
+              <img src={recipe.delivery_image_preview || recipe.delivery_image_url} alt="Delivery full view" loading="eager" />
+              <button className="close-modal" onClick={() => setShowDeliveryImageModal(false)}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

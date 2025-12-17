@@ -46,7 +46,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-width: 0; /* Allow flex items to shrink */
+  min-width: 0;
+  /* Allow flex items to shrink */
 }
 
 .ingredient-emoji {
@@ -60,7 +61,8 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  min-width: 0; /* Allow text to wrap */
+  min-width: 0;
+  /* Allow text to wrap */
   flex: 1;
   max-width: 100%;
 }
@@ -221,18 +223,19 @@
 }
 
 .action-label {
-  display: none; /* Hide by default, show only on wide screens */
+  display: none;
+  /* Hide by default, show only on wide screens */
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
-/* Show labels on very wide screens only */
-@media (min-width: 1400px) {
+/* Labels hidden to prevent layout issues - relying on tooltips */
+/* @media (min-width: 1400px) {
   .action-label {
     display: block;
   }
-}
+} */
 
 /* Add Button */
 .action-btn.action-add {
@@ -364,7 +367,8 @@
   }
 
   .action-label {
-    display: none; /* Hide labels on mobile */
+    display: none;
+    /* Hide labels on mobile */
   }
 
   .action-icon {

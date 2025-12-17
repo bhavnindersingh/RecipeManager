@@ -11,6 +11,7 @@ const StockEditModal = ({
   const [quantity, setQuantity] = useState('');
   const [unitCost, setUnitCost] = useState('');
   const [referenceNo, setReferenceNo] = useState('');
+  const [notes, setNotes] = useState('');
   const [adjustmentType, setAdjustmentType] = useState('add'); // 'add' or 'subtract' for adjust action
   const [isSubmitting, setIsSubmitting] = useState(false);
   const quantityInputRef = useRef(null);
@@ -20,6 +21,7 @@ const StockEditModal = ({
     if (isOpen && ingredient) {
       setQuantity('');
       setReferenceNo('');
+      setNotes('');
       setAdjustmentType('add');
 
       // Pre-fill unit cost with ingredient cost for purchases
@@ -72,8 +74,8 @@ const StockEditModal = ({
         transaction_type: transactionTypeMap[actionType],
         quantity: finalQuantity,
         unit_cost: actionType === 'add' ? parseFloat(unitCost) : null,
-        reference_no: referenceNo || null,
-        notes: null
+        reference_no: actionType === 'add' ? (referenceNo || null) : null,
+        notes: actionType !== 'add' ? (notes || null) : null
       });
 
       onClose();
@@ -87,7 +89,7 @@ const StockEditModal = ({
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !isSubmitting) {
+    if (e.key === 'Enter' && !isSubmitting && !e.shiftKey) { // Prevent submit on shift+enter in textarea
       handleSave();
     } else if (e.key === 'Escape') {
       onClose();
@@ -242,16 +244,34 @@ const StockEditModal = ({
             </div>
           )}
 
-          {/* Reference Number */}
+          {/* Reference No (Purchase) OR Narration (Wastage/Adjust) */}
           <div className="form-group-modal">
-            <label className="modal-label">Reference / Bill No.</label>
-            <input
-              type="text"
-              value={referenceNo}
-              onChange={(e) => setReferenceNo(e.target.value)}
-              className="modal-input"
-              placeholder="Optional"
-            />
+            {actionType === 'add' ? (
+              <>
+                <label className="modal-label">Reference / Bill No.</label>
+                <input
+                  type="text"
+                  value={referenceNo}
+                  onChange={(e) => setReferenceNo(e.target.value)}
+                  className="modal-input"
+                  placeholder="Optional: Bill #, Invoice #"
+                />
+              </>
+            ) : (
+              <>
+                <label className="modal-label">Narration / Reason</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="modal-input"
+                  placeholder={actionType === 'remove'
+                    ? "e.g., Spilled, Spoiled, Expired..."
+                    : "e.g., Monthly inventory correction..."}
+                  rows="2"
+                  style={{ resize: 'vertical', minHeight: '80px' }}
+                />
+              </>
+            )}
           </div>
         </div>
 

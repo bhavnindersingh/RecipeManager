@@ -501,37 +501,58 @@ const IngredientsManager = () => {
 
       {/* Search and Filter Section */}
       <div className="search-section">
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search ingredients..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="category-filter-select"
-            style={{
-              padding: '0.75rem',
-              borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              backgroundColor: 'white',
-              fontSize: '0.9rem',
-              color: '#1e293b',
-              minWidth: '200px',
-              cursor: 'pointer'
-            }}
-          >
-            <option value="All">All Categories</option>
-            {INGREDIENT_CATEGORIES.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
+        <div className="search-filter-row">
+          <div className="search-container">
+            <div className="search-input-wrapper">
+              <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search ingredients by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button
+                  className="clear-search-btn"
+                  onClick={() => setSearchTerm('')}
+                  aria-label="Clear search"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12"></path>
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="category-filter-container">
+            <label className="filter-label">
+              <svg className="filter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+              Category
+            </label>
+            <select
+              className="category-filter-select"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="All">All Categories</option>
+              {INGREDIENT_CATEGORIES.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div className="ingredient-count">
-          Showing {filteredIngredients.length} of {ingredients.length} ingredients
+
+        <div className="search-results-info">
+          <span className="ingredient-count">
+            {filteredIngredients.length} {filteredIngredients.length === 1 ? 'ingredient' : 'ingredients'} found
+          </span>
         </div>
       </div>
 
@@ -679,10 +700,10 @@ const IngredientsManager = () => {
                 </tr>
               )}
             </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+          </table >
+        </div >
+      </div >
+    </div >
   );
 };
 

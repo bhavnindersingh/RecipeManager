@@ -52,6 +52,9 @@ erDiagram
         boolean available_for_delivery
         boolean is_production_recipe
         text image_url
+        string sku
+        text special_instruction_image
+        text delivery_image_url
         decimal selling_price
         int sales
         decimal overhead
@@ -232,12 +235,14 @@ Complete recipe information including menu availability, pricing, and profitabil
 | cooking_method | TEXT | | Cooking instructions |
 | plating_instructions | TEXT | | Plating instructions |
 | chefs_notes | TEXT | | Chef's notes |
-| print_menu_ready | BOOLEAN | DEFAULT false | Ready for print menu |
-| qr_menu_ready | BOOLEAN | DEFAULT false | Ready for QR menu |
-| website_menu_ready | BOOLEAN | DEFAULT false | Ready for website menu |
-| available_for_delivery | BOOLEAN | DEFAULT false | Available for delivery |
+| print_menu_ready | BOOLEAN | DEFAULT false | Ready for print menu (Dine in Menu) |
+| qr_menu_ready | BOOLEAN | DEFAULT false | Ready for QR menu (Legacy) |
+| website_menu_ready | BOOLEAN | DEFAULT false | Ready for website menu (Legacy) |
+| available_for_delivery | BOOLEAN | DEFAULT true | Whether item is enabled for delivery |
+| sku | VARCHAR(20) | UNIQUE | Auto-generated Stock Keeping Unit code (FMB/DMB) |
 | is_production_recipe | BOOLEAN | DEFAULT true | Available in POS (vs internal prep) |
 | delivery_image_url | TEXT | | Image for delivery platforms |
+| special_instruction_image | TEXT | | Visual guide image for complex preparation steps |
 | image_url | TEXT | | Main recipe image |
 | selling_price | DECIMAL(10,2) | DEFAULT 0 | Selling price |
 | sales | INTEGER | DEFAULT 0 | Total sales count |
@@ -255,9 +260,11 @@ Complete recipe information including menu availability, pricing, and profitabil
 - `idx_recipes_category` on category
 - `idx_recipes_created_at` on created_at
 - `idx_recipes_is_production` on is_production_recipe
+- `idx_recipes_sku` on sku
 
 **Triggers:**
 - `update_recipes_updated_at` - Auto-updates updated_at on changes
+- `trigger_auto_generate_recipe_sku` - Auto-generates SKU on insert
 
 ---
 
@@ -531,6 +538,7 @@ Ingredient-specific inventory settings.
 3. **Stock Level Updates** - Stock quantities update automatically on transactions
 4. **Timestamp Management** - `updated_at` fields auto-update on changes
 5. **Stock Initialization** - New ingredients automatically create stock and settings records
+6. **SKU Generation** - Automatically generates SKUs (e.g. FHB 001) for recipes based on category
 
 ### 🔐 Security
 
@@ -588,6 +596,12 @@ Ingredient-specific inventory settings.
 - `initialize_stock_for_new_ingredient()` - Trigger function for new ingredients
 - `sync_minimum_stock_on_ingredient_update()` - Syncs minimum stock across tables
 
+### Recipe/SKU
+- `generate_recipe_sku(recipe_category TEXT)` - Generates new SKU
+- `preview_next_sku(recipe_category TEXT)` - Previews next SKU
+- `auto_generate_recipe_sku()` - Trigger to auto-add SKU
+- `get_recipe_sales_data(target_recipe_id INTEGER)` - Returns aggregated sales metrics
+
 ---
 
 ## Migration Files
@@ -602,8 +616,15 @@ Ingredient-specific inventory settings.
 8. `20251215093144_stock_management.sql` - Stock management system
 9. `20251215120000_add_minimum_stock_to_ingredients.sql` - Minimum stock on ingredients
 10. `20251216000000_add_vendor_fields_to_ingredients.sql` - Vendor details for ingredients
-11. `20251216000001_update_pins_to_6_digits.sql` - Update PINs to 6 digits
-12. `20251217000000_update_ingredient_categories.sql` - Standardize ingredient categories
+11. `20251216000001_update_pins_to_6_digits.sql` - Updates default user PINs to 6 digits
+12. `20251217000000_update_ingredient_categories.sql` - Enforces 14 predefined ingredient categories
+13. `20251217000001_add_sku_to_recipes.sql` - Adds SKU column and generation logic to recipes
+14. `20251217000002_delete_recipe_data.sql` - Cleans up old recipe data for schema consistency
+15. `20251217000003_add_staff_profiles.sql` - Adds staff profiles with secure PINs
+16. `20251217000004_fix_adjustment_logic.sql` - Fixes stock adjustment logic to handle signed values
+17. `20251217000005_add_special_instruction_image.sql` - Adds special_instruction_image column
+
+**Total Migrations:** 17
 
 ---
 

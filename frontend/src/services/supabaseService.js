@@ -28,7 +28,7 @@ export const recipeService = {
 
   // Create a new recipe
   async createRecipe(recipeData) {
-    const { ingredients, recipe_ingredients, image, image_preview, delivery_image, delivery_image_preview, id, created_at, updated_at, ...recipeFields } = recipeData;
+    const { ingredients, recipe_ingredients, image, image_preview, delivery_image, delivery_image_preview, id, created_at, updated_at, profit_per_unit, total_profit_earned, sales_velocity, price_variance, avg_sale_price, ...recipeFields } = recipeData;
 
     // Insert recipe (only DB fields)
     const { data: recipe, error: recipeError } = await supabase
@@ -87,7 +87,7 @@ export const recipeService = {
 
   // Update recipe
   async updateRecipe(id, recipeData) {
-    const { ingredients, recipe_ingredients, image, image_preview, delivery_image, delivery_image_preview, id: recipeId, created_at, updated_at, ...recipeFields } = recipeData;
+    const { ingredients, recipe_ingredients, image, image_preview, delivery_image, delivery_image_preview, id: recipeId, created_at, updated_at, profit_per_unit, total_profit_earned, sales_velocity, price_variance, avg_sale_price, ...recipeFields } = recipeData;
 
     // Update recipe (only DB fields)
     const { error: updateError } = await supabase
@@ -227,14 +227,14 @@ export const recipeService = {
   async previewNextSku(category) {
     try {
       const { data, error } = await supabase.rpc('preview_next_sku', {
-        recipe_category: category || 'Uncategorized'
+        recipe_category: category || 'Food'
       });
 
       if (error) throw error;
-      return data || 'FMB 001';
+      return data || 'FHB 001';
     } catch (error) {
       console.error('Error previewing next SKU:', error);
-      return 'FMB 001'; // Fallback
+      return 'FHB 001'; // Fallback
     }
   }
 };

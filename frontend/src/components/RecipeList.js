@@ -5,13 +5,13 @@ import '../styles/RecipeList.css';
 const RECIPE_CATEGORIES = ['Food', 'Bakery', 'Beverages'];
 const ITEMS_PER_PAGE = 10;
 
-const RecipeList = ({ 
-  recipes = [], 
-  ingredients = [], 
-  onEdit, 
-  onDeleteRecipe, 
-  setRecipes, 
-  selectedCategory 
+const RecipeList = ({
+  recipes = [],
+  ingredients = [],
+  onEdit,
+  onDeleteRecipe,
+  setRecipes,
+  selectedCategory
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategoryState, setSelectedCategory] = useState('all');
@@ -67,7 +67,7 @@ const RecipeList = ({
       .filter(recipe => {
         if (!recipe) return false;
         const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (recipe.chefs_notes && recipe.chefs_notes.toLowerCase().includes(searchTerm.toLowerCase()));
+          (recipe.chefs_notes && recipe.chefs_notes.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesCategory = selectedCategoryState === 'all' || recipe.category === selectedCategoryState;
         return matchesSearch && matchesCategory;
       })
@@ -87,7 +87,7 @@ const RecipeList = ({
   if (!recipes || recipes.length === 0) {
     return (
       <div className="recipe-manager-container">
-        <div className="page-title-container">
+        <div className="page-title-card">
           <h1 className="page-title">
             Recipe Manager
             <div className="recipe-stats">
@@ -113,7 +113,7 @@ const RecipeList = ({
 
   return (
     <div className="recipe-manager-container">
-      <div className="page-title-container">
+      <div className="page-title-card">
         <h1 className="page-title">
           Recipe Manager
           <div className="recipe-stats">
@@ -200,7 +200,7 @@ const RecipeList = ({
             <tbody>
               {paginatedRecipes.map(recipe => {
                 if (!recipe) return null;
-                
+
                 return (
                   <tr key={recipe.id}>
                     <td>{recipe.name}</td>
@@ -213,13 +213,13 @@ const RecipeList = ({
                     <td>₹ {recipe.monthly_profit}</td>
                     <td>{recipe.markup_factor}x</td>
                     <td>
-                      <button 
+                      <button
                         className="action-button edit"
                         onClick={() => onEdit(recipe)}
                       >
                         Edit
                       </button>
-                      <button 
+                      <button
                         className="action-button delete"
                         onClick={() => handleDeleteRecipe(recipe.id)}
                       >
@@ -232,10 +232,10 @@ const RecipeList = ({
             </tbody>
           </table>
         </div>
-        
+
         {totalPages > 1 && (
           <div className="pagination">
-            <button 
+            <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >

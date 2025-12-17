@@ -1,7 +1,9 @@
 -- Add SKU (Stock Keeping Unit) System to Recipes
 -- Auto-generates category-based SKU codes:
--- Food items: FMB 001, FMB 002, etc. (Food Main Branch)
--- Drink items: DMB 001, DMB 002, etc. (Drink Main Branch)
+-- Food: FHB 001, FHB 002 (Food Home Branch)
+-- Drinks: DHB 001, DHB 002 (Drinks Home Branch)
+-- Patisserie: PHB 001, Condiments: CHB 001, Cakes: KHB 001
+-- Components: OHB 001, Research: RHB 001
 
 -- ========================================
 -- 1. ADD SKU COLUMN TO RECIPES TABLE
@@ -13,50 +15,50 @@ ADD COLUMN IF NOT EXISTS sku VARCHAR(20) UNIQUE;
 CREATE INDEX IF NOT EXISTS idx_recipes_sku ON recipes(sku);
 
 -- Add comment to document the field
-COMMENT ON COLUMN recipes.sku IS 'Auto-generated Stock Keeping Unit code based on category (FMB for food, DMB for drinks)';
+COMMENT ON COLUMN recipes.sku IS 'Auto-generated Stock Keeping Unit code based on category (FHB for Food, DHB for Drinks, etc.)';
 
 -- ========================================
--- 2. CREATE SEQUENCES FOR SKU GENERATION
--- ========================================
--- Sequence for Food items (FMB)
-CREATE SEQUENCE IF NOT EXISTS recipe_sku_food_seq START 1;
-
--- Sequence for Drink items (DMB)
-CREATE SEQUENCE IF NOT EXISTS recipe_sku_drink_seq START 1;
-
--- ========================================
--- 3. SKU GENERATION FUNCTION
+-- 2. SKU GENERATION FUNCTION
 -- ========================================
 -- Generates SKU based on recipe category
--- Food categories: Main Course, Appetizers, Soups, Salads, Sides, Desserts → FMB
--- Drink categories: Beverages, Juices, Smoothies, Cocktails, Hot Drinks → DMB
--- Other categories: GEN (General)
+-- Uses first letter of category + HB (Home Branch) + sequential number
 
+-- Function to generate SKU based on category
 CREATE OR REPLACE FUNCTION generate_recipe_sku(recipe_category TEXT)
 RETURNS TEXT AS $$
 DECLARE
-    sku_prefix TEXT;
-    sku_number INTEGER;
-    generated_sku TEXT;
-    food_categories TEXT[] := ARRAY['Main Course', 'Appetizers', 'Soups', 'Salads', 'Sides', 'Desserts', 'Bakery', 'Snacks'];
-    drink_categories TEXT[] := ARRAY['Beverages', 'Juices', 'Smoothies', 'Cocktails', 'Mocktails', 'Hot Drinks', 'Cold Drinks', 'Shakes'];
+  next_number INTEGER;
+  prefix TEXT;
+  new_sku TEXT;
 BEGIN
-    -- Determine SKU prefix based on category
-    IF recipe_category = ANY(food_categories) THEN
-        sku_prefix := 'FMB';
-        sku_number := nextval('recipe_sku_food_seq');
-    ELSIF recipe_category = ANY(drink_categories) THEN
-        sku_prefix := 'DMB';
-        sku_number := nextval('recipe_sku_drink_seq');
-    ELSE
-        sku_prefix := 'GEN';
-        sku_number := nextval('recipe_sku_food_seq'); -- Use food sequence for general items
-    END IF;
+  -- Determine prefix based on category (First Letter + HB for Home Branch)
+  CASE recipe_category
+    WHEN 'Food' THEN prefix := 'FHB';
+    WHEN 'Drinks' THEN prefix := 'DHB';
+    WHEN 'Patisserie' THEN prefix := 'PHB';
+    WHEN 'Condiments' THEN prefix := 'CHB';
+    WHEN 'Cakes' THEN prefix := 'KHB'; -- Using K to avoid conflict with Condiments
+    WHEN 'Components' THEN prefix := 'OHB'; -- Using O for cOmponents
+    WHEN 'Research' THEN prefix := 'RHB';
+    ELSE prefix := 'XHB'; -- Unknown category
+  END CASE;
 
-    -- Format SKU: PREFIX 001, PREFIX 002, etc.
-    generated_sku := sku_prefix || ' ' || LPAD(sku_number::TEXT, 3, '0');
+  -- Get the next number for this prefix
+  SELECT COALESCE(MAX(
+    CASE 
+      WHEN sku ~ ('^' || prefix || ' [0-9]+$') 
+      THEN CAST(SUBSTRING(sku FROM LENGTH(prefix) + 2) AS INTEGER)
+      ELSE 0
+    END
+  ), 0) + 1
+  INTO next_number
+  FROM recipes
+  WHERE sku LIKE prefix || '%';
 
-    RETURN generated_sku;
+  -- Format: PREFIX NNN (e.g., FHB 001)
+  new_sku := prefix || ' ' || LPAD(next_number::TEXT, 3, '0');
+  
+  RETURN new_sku;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -69,7 +71,7 @@ RETURNS TRIGGER AS $$
 BEGIN
     -- Only generate SKU if it's not already provided
     IF NEW.sku IS NULL OR NEW.sku = '' THEN
-        NEW.sku := generate_recipe_sku(COALESCE(NEW.category, 'Uncategorized'));
+        NEW.sku := generate_recipe_sku(COALESCE(NEW.category, 'Food'));
     END IF;
     RETURN NEW;
 END;
@@ -132,31 +134,44 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ========================================
--- 7. HELPER FUNCTION - GET NEXT SKU PREVIEW
+-- 6. HELPER FUNCTION - GET NEXT SKU PREVIEW
 -- ========================================
 -- Returns what the next SKU will be for a given category (without incrementing)
 CREATE OR REPLACE FUNCTION preview_next_sku(recipe_category TEXT)
 RETURNS TEXT AS $$
 DECLARE
-    sku_prefix TEXT;
-    sku_number INTEGER;
-    food_categories TEXT[] := ARRAY['Main Course', 'Appetizers', 'Soups', 'Salads', 'Sides', 'Desserts', 'Bakery', 'Snacks'];
-    drink_categories TEXT[] := ARRAY['Beverages', 'Juices', 'Smoothies', 'Cocktails', 'Mocktails', 'Hot Drinks', 'Cold Drinks', 'Shakes'];
+  next_number INTEGER;
+  prefix TEXT;
+  new_sku TEXT;
 BEGIN
-    -- Determine SKU prefix based on category
-    IF recipe_category = ANY(food_categories) THEN
-        sku_prefix := 'FMB';
-        sku_number := (SELECT last_value FROM recipe_sku_food_seq);
-    ELSIF recipe_category = ANY(drink_categories) THEN
-        sku_prefix := 'DMB';
-        sku_number := (SELECT last_value FROM recipe_sku_drink_seq);
-    ELSE
-        sku_prefix := 'GEN';
-        sku_number := (SELECT last_value FROM recipe_sku_food_seq);
-    END IF;
+  -- Determine prefix based on category (First Letter + HB for Home Branch)
+  CASE recipe_category
+    WHEN 'Food' THEN prefix := 'FHB';
+    WHEN 'Drinks' THEN prefix := 'DHB';
+    WHEN 'Patisserie' THEN prefix := 'PHB';
+    WHEN 'Condiments' THEN prefix := 'CHB';
+    WHEN 'Cakes' THEN prefix := 'KHB';
+    WHEN 'Components' THEN prefix := 'OHB';
+    WHEN 'Research' THEN prefix := 'RHB';
+    ELSE prefix := 'XHB'; -- Unknown category
+  END CASE;
 
-    -- Format next SKU (current value + 1)
-    RETURN sku_prefix || ' ' || LPAD((sku_number + 1)::TEXT, 3, '0');
+  -- Get the next number for this prefix
+  SELECT COALESCE(MAX(
+    CASE 
+      WHEN sku ~ ('^' || prefix || ' [0-9]+$') 
+      THEN CAST(SUBSTRING(sku FROM LENGTH(prefix) + 2) AS INTEGER)
+      ELSE 0
+    END
+  ), 0) + 1
+  INTO next_number
+  FROM recipes
+  WHERE sku LIKE prefix || '%';
+
+  -- Format: PREFIX NNN (e.g., FHB 001)
+  new_sku := prefix || ' ' || LPAD(next_number::TEXT, 3, '0');
+  
+  RETURN new_sku;
 END;
 $$ LANGUAGE plpgsql;
 
