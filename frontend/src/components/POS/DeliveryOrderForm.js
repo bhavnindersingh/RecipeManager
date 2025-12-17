@@ -16,7 +16,6 @@ const DeliveryOrderForm = ({ platform, recipes, onOrderComplete }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [recentOrderId, setRecentOrderId] = useState(null);
-  const [recentOrderStatus, setRecentOrderStatus] = useState(null);
 
   // Subscribe to realtime updates for recently created order
   useEffect(() => {
@@ -33,7 +32,6 @@ const DeliveryOrderForm = ({ platform, recipes, onOrderComplete }) => {
         console.log('Delivery order status updated:', payload);
 
         if (payload.new.status !== payload.old.status) {
-          setRecentOrderStatus(payload.new.status);
           showMessage(`Order ${payload.new.order_number}: ${payload.new.status}`, 'info');
         }
       })
@@ -164,7 +162,6 @@ const DeliveryOrderForm = ({ platform, recipes, onOrderComplete }) => {
 
       // Track this order for realtime status updates
       setRecentOrderId(order.id);
-      setRecentOrderStatus(order.status);
 
       // Clear form
       setCart([]);

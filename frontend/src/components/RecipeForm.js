@@ -523,20 +523,6 @@ const RecipeForm = ({ ingredients, onSubmit, editingRecipe, onCancel, mode = 'cr
     navigate('/manager');
   };
 
-  const handleIngredientChange = (e) => {
-    if (isViewMode) return;
-    const selectedId = e.target.value;
-    const selectedIng = ingredients.find(i => i.id === parseInt(selectedId));
-
-    setSelectedIngredient({
-      id: selectedId,
-      name: selectedIng?.name || '',
-      unit: selectedIng?.unit || '',
-      cost_per_unit: selectedIng?.cost_per_unit || selectedIng?.cost || '0',
-      quantity: '0'
-    });
-  };
-
   const handleAddIngredient = () => {
     if (isViewMode) return;
 
