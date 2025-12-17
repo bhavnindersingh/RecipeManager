@@ -46,8 +46,10 @@ const StockListItem = ({ stock, onAction }) => {
       <div className="stock-item-left">
         <span className="ingredient-emoji">{categoryEmoji}</span>
         <div className="ingredient-details">
-          <h3 className="ingredient-name">{ingredient?.name || 'Unknown'}</h3>
-          <span className="ingredient-category">{ingredient?.category || 'Uncategorized'}</span>
+          <div className="ingredient-name-row">
+            <h3 className="ingredient-name">{ingredient?.name || 'Unknown'}</h3>
+            <span className="ingredient-category">{ingredient?.category || 'Uncategorized'}</span>
+          </div>
         </div>
       </div>
 
@@ -88,26 +90,26 @@ const StockListItem = ({ stock, onAction }) => {
           <button
             className="action-btn action-add"
             onClick={() => onAction('add', stock)}
-            title="Add Stock (Purchase)"
+            title="Purchase - Add new stock"
           >
             <span className="action-icon">➕</span>
-            <span className="action-label">Add</span>
+            <span className="action-label">Purchase</span>
           </button>
           <button
             className="action-btn action-remove"
             onClick={() => onAction('remove', stock)}
-            title="Remove Stock (Wastage)"
+            title="Wastage - Remove damaged/spoiled stock"
           >
             <span className="action-icon">➖</span>
-            <span className="action-label">Remove</span>
+            <span className="action-label">Wastage</span>
           </button>
           <button
             className="action-btn action-adjust"
             onClick={() => onAction('adjust', stock)}
-            title="Adjust Stock"
+            title="Adjust ± - Correct stock count"
           >
             <span className="action-icon">✏️</span>
-            <span className="action-label">Adjust</span>
+            <span className="action-label">Adjust ±</span>
           </button>
         </div>
       </div>

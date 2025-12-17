@@ -213,8 +213,32 @@ const StockRegister = () => {
       <div className="page-title-card">
         <h1 className="page-title">Stock Register</h1>
         <div className="header-actions">
+          {/* Compact Tab Pills */}
+          <div className="tab-pills">
+            <button
+              className={`tab-pill ${activeTab === 'quick-update' ? 'active' : ''}`}
+              onClick={() => setActiveTab('quick-update')}
+              title="Quick Update"
+            >
+              ⚡ Quick
+            </button>
+            <button
+              className={`tab-pill ${activeTab === 'stock-levels' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stock-levels')}
+              title="Stock Levels"
+            >
+              📊 Levels
+            </button>
+            <button
+              className={`tab-pill ${activeTab === 'transactions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('transactions')}
+              title="Transaction History"
+            >
+              📋 History
+            </button>
+          </div>
           <button className="btn-export" onClick={handleExport} title="Export to Excel">
-            Export
+            📥 Export
           </button>
         </div>
       </div>
@@ -237,28 +261,6 @@ const StockRegister = () => {
           <div className="summary-label">Recent Transactions (24h)</div>
           <div className="summary-value">{summary.recentTransactionsCount}</div>
         </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="stock-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'quick-update' ? 'active' : ''}`}
-          onClick={() => setActiveTab('quick-update')}
-        >
-          ⚡ Quick Update
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'stock-levels' ? 'active' : ''}`}
-          onClick={() => setActiveTab('stock-levels')}
-        >
-          📊 Stock Levels
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'transactions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('transactions')}
-        >
-          📋 Transaction History
-        </button>
       </div>
 
       {/* Quick Update Tab - NEW LIST VIEW */}

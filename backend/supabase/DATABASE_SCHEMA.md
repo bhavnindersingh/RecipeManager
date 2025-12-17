@@ -34,6 +34,8 @@ erDiagram
         string unit
         string category
         decimal minimum_stock
+        string vendor_name
+        string vendor_phone
         timestamp created_at
     }
     
@@ -188,12 +190,16 @@ Stores all ingredient master data including costs and minimum stock levels.
 | unit | VARCHAR(50) | NOT NULL | Unit of measurement (kg, L, pcs, etc.) |
 | category | VARCHAR(100) | | Ingredient category |
 | minimum_stock | DECIMAL(10,2) | NOT NULL, DEFAULT 10 | Minimum stock threshold |
+| vendor_name | VARCHAR(255) | | Current vendor/supplier name |
+| vendor_phone | VARCHAR(20) | | Vendor contact phone number |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Creation timestamp |
 
 **Indexes:**
 - `idx_ingredients_name` on name
 - `idx_ingredients_category` on category
 - `idx_ingredients_minimum_stock` on minimum_stock
+- `idx_ingredients_vendor_name` on vendor_name
+- `idx_ingredients_vendor_phone` on vendor_phone
 
 ---
 
@@ -276,10 +282,10 @@ User accounts with role-based access control and PIN authentication.
 - `idx_profiles_is_active` on is_active
 
 **Default Users:**
-- Admin (PIN: 0000)
-- Server (PIN: 1111)
-- Kitchen (PIN: 2222)
-- Store Manager (PIN: 3333)
+- Admin (PIN: 000000)
+- Server (PIN: 111111)
+- Kitchen (PIN: 222222)
+- Store Manager (PIN: 333333)
 
 ---
 
@@ -578,6 +584,8 @@ Ingredient-specific inventory settings.
 7. `20251214234643_add_recipe_type.sql` - Production recipe flag
 8. `20251215093144_stock_management.sql` - Stock management system
 9. `20251215120000_add_minimum_stock_to_ingredients.sql` - Minimum stock on ingredients
+10. `20251216000000_add_vendor_fields_to_ingredients.sql` - Vendor details for ingredients
+11. `20251216000001_update_pins_to_6_digits.sql` - Update PINs to 6 digits
 
 ---
 
@@ -607,6 +615,6 @@ pending → preparing → ready
 
 ---
 
-**Last Updated:** 2025-12-16  
+**Last Updated:** 2025-12-17  
 **Database Version:** PostgreSQL 14+ (Supabase)  
-**Total Migrations:** 9
+**Total Migrations:** 11

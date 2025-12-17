@@ -11,6 +11,7 @@ const StockEditModal = ({
   const [quantity, setQuantity] = useState('');
   const [unitCost, setUnitCost] = useState('');
   const [referenceNo, setReferenceNo] = useState('');
+  const [adjustmentType, setAdjustmentType] = useState('add'); // 'add' or 'subtract' for adjust action
   const [isSubmitting, setIsSubmitting] = useState(false);
   const quantityInputRef = useRef(null);
 
@@ -19,6 +20,7 @@ const StockEditModal = ({
     if (isOpen && ingredient) {
       setQuantity('');
       setReferenceNo('');
+      setAdjustmentType('add');
 
       // Pre-fill unit cost with ingredient cost for purchases
       if (actionType === 'add') {
@@ -57,10 +59,18 @@ const StockEditModal = ({
         adjust: 'adjustment'
       };
 
+      // For adjustments, use signed quantity (negative if subtracting)
+      let finalQuantity = parseFloat(quantity);
+      if (actionType === 'adjust' && adjustmentType === 'subtract') {
+        finalQuantity = -Math.abs(finalQuantity);
+      } else if (actionType === 'adjust' && adjustmentType === 'add') {
+        finalQuantity = Math.abs(finalQuantity);
+      }
+
       await onSave({
         ingredient_id: ingredient.id,
         transaction_type: transactionTypeMap[actionType],
-        quantity: parseFloat(quantity),
+        quantity: finalQuantity,
         unit_cost: actionType === 'add' ? parseFloat(unitCost) : null,
         reference_no: referenceNo || null,
         notes: null
@@ -92,19 +102,19 @@ const StockEditModal = ({
       title: 'Add Stock (Purchase)',
       icon: '➕',
       color: '#059669',
-      description: 'Adding stock from purchase'
+      description: 'Recording new stock purchase'
     },
     remove: {
       title: 'Remove Stock (Wastage)',
       icon: '➖',
       color: '#dc2626',
-      description: 'Removing stock due to wastage'
+      description: 'Recording stock wastage or spoilage'
     },
     adjust: {
-      title: 'Adjust Stock',
+      title: 'Adjust Stock ±',
       icon: '✏️',
       color: '#2563eb',
-      description: 'Manual stock correction'
+      description: 'Manual stock correction (physical count vs system)'
     }
   };
 
@@ -147,6 +157,37 @@ const StockEditModal = ({
           {/* Action Description */}
           <p className="action-description">{config.description}</p>
 
+          {/* Adjustment Type Toggle (only for adjust action) */}
+          {actionType === 'adjust' && (
+            <div className="adjustment-type-selector">
+              <label className="modal-label">Adjustment Type</label>
+              <div className="adjustment-type-buttons">
+                <button
+                  type="button"
+                  className={`adjustment-type-btn ${adjustmentType === 'add' ? 'active add' : ''}`}
+                  onClick={() => setAdjustmentType('add')}
+                >
+                  <span className="btn-icon">➕</span>
+                  <div>
+                    <div className="btn-title">Add Stock</div>
+                    <div className="btn-subtitle">Physical count is higher</div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`adjustment-type-btn ${adjustmentType === 'subtract' ? 'active subtract' : ''}`}
+                  onClick={() => setAdjustmentType('subtract')}
+                >
+                  <span className="btn-icon">➖</span>
+                  <div>
+                    <div className="btn-title">Subtract Stock</div>
+                    <div className="btn-subtitle">Physical count is lower</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Quantity Input */}
           <div className="form-group-modal">
             <label className="modal-label">
@@ -166,6 +207,13 @@ const StockEditModal = ({
               />
               <span className="input-unit">{ingredient.unit}</span>
             </div>
+            {actionType === 'adjust' && (
+              <span className="field-hint-modal">
+                {adjustmentType === 'add'
+                  ? '✅ This will ADD the entered quantity to current stock'
+                  : '⚠️ This will SUBTRACT the entered quantity from current stock'}
+              </span>
+            )}
           </div>
 
           {/* Unit Cost (only for purchases) */}
