@@ -12,7 +12,7 @@ const IngredientsManager = () => {
     name: '',
     unit: '',
     cost: '',
-    category: 'Vegetables & Fruits',
+    category: 'Fresh Vegetables',
     minimum_stock: '10',
     vendor_name: '',
     vendor_phone: ''
@@ -106,7 +106,7 @@ const IngredientsManager = () => {
         name: '',
         unit: '',
         cost: '',
-        category: 'Vegetables & Fruits',
+        category: 'Fresh Vegetables',
         minimum_stock: '10',
         vendor_name: '',
         vendor_phone: ''
@@ -193,7 +193,7 @@ const IngredientsManager = () => {
             unit: row.Unit || row.unit,
             cost: Number(row['Cost (₹)'] || row.cost || 0),
             minimum_stock: Number(row['Min Stock'] || row.minimum_stock || 10),
-            category: row.Category || row.category || 'Vegetables & Fruits',
+            category: row.Category || row.category || 'Fresh Vegetables',
             vendor_name: row.Vendor || row.vendor_name || null,
             vendor_phone: row.Phone || row.vendor_phone || null
           };
@@ -265,13 +265,13 @@ const IngredientsManager = () => {
       setIngredients(prev => prev.map(ing =>
         ing.id === ingredient.id
           ? {
-              ...ing,
-              cost: parseFloat(editingValues.cost),
-              category: editingValues.category,
-              minimum_stock: parseFloat(editingValues.minimum_stock),
-              vendor_name: editingValues.vendor_name.trim() || null,
-              vendor_phone: editingValues.vendor_phone.trim() || null
-            }
+            ...ing,
+            cost: parseFloat(editingValues.cost),
+            category: editingValues.category,
+            minimum_stock: parseFloat(editingValues.minimum_stock),
+            vendor_name: editingValues.vendor_name.trim() || null,
+            vendor_phone: editingValues.vendor_phone.trim() || null
+          }
           : ing
       ));
       setEditingId(null);
