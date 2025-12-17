@@ -180,13 +180,13 @@ const RecipeManager = ({ recipes = [], onEditRecipe, onDeleteRecipe, onViewRecip
           {filteredAndSortedRecipes.map(recipe => (
             <div key={recipe.id} className={`recipe-card ${!recipe.is_production_recipe ? 'internal-card' : ''}`}>
               <div className="card-top-badges">
-                <span className="category-tag" data-category={recipe.category}>{recipe.category}</span>
                 {recipe.sku && <span className="sku-badge">{recipe.sku}</span>}
                 {!recipe.is_production_recipe && <span className="internal-badge"><FaUtensils /> Internal</span>}
               </div>
 
               <div className="recipe-card-header">
                 <h3 className="recipe-name">{recipe.name}</h3>
+                <span className="category-tag" data-category={recipe.category}>{recipe.category}</span>
               </div>
 
               <div className="recipe-metrics">
